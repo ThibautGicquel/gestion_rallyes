@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titre %}Accueil{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-4">Gestion des rallyes sportifs</h1>
+
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
+  {% for libelle, cle, icone in [
+       ("Éditions", "editions", "flag"),
+       ("Étapes", "etapes", "signpost-split"),
+       ("Concurrents", "concurrents", "people"),
+       ("Équipes", "equipes", "shield"),
+       ("Véhicules", "vehicules", "truck"),
+       ("Résultats", "resultats", "stopwatch")] %}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <div class="text-body-secondary small"><i class="bi bi-{{ icone }}"></i> {{ libelle }}</div>
+        <div class="fs-4 fw-semibold">{{ chiffres[cle] | nombre }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header">Dernières éditions</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Rallye</th><th>Année</th>
+          <th class="text-end">Étapes</th><th class="text-end">Équipages</th><th class="text-end">Concurrents</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in dernieres %}
+        <tr>
+          <td>{{ r.nomrallye }}</td><td>{{ r.annee }}</td>
+          <td class="text-end">{{ r.nbetapes }}</td>
+          <td class="text-end">{{ r.nbequipages | nombre }}</td>
+          <td class="text-end">{{ r.nbconcurrents | nombre }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
