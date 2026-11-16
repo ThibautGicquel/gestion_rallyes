@@ -1,31 +1,8 @@
--- =====================================================================
---  Gestion des rallyes sportifs - 04 : fonctions et triggers (PostgreSQL)
--- ---------------------------------------------------------------------
---  Contraintes d'intégrité qui ne s'expriment ni par une clé ni par un
---  CHECK (voir le tableau des contraintes du rapport) :
---    C12  un équipage compte exactement 2 concurrents (et a un véhicule)
---    C13  une équipe association panache au moins 2 marques
---    C14  la marque du véhicule fait partie des marques de l'équipe
---    C15  toute étape / équipe a sa ligne dans la table de son sous-type
---
---  Les contraintes "au moins N lignes liées" ne peuvent être vérifiées
---  qu'une fois toutes les lignes insérées. On utilise donc des
---  CONSTRAINT TRIGGER ... DEFERRABLE INITIALLY DEFERRED : la vérification
---  a lieu au COMMIT. Il faut donc insérer un équipage, ses deux
---  concurrents et son véhicule dans la même transaction.
---
---  Non implémentées (documentées dans le rapport) : "tout rallye a au
---  moins une étape", "toute étape traverse au moins un pays", "toute
---  équipe a au moins un équipage", ainsi que C6 (l'heure d'arrivée
---  n'est pas stockée) et C16 (numérotation continue des étapes).
--- =====================================================================
+-- Fonctions et triggers (C12 à C15)
+-- C12, C13 et C15 sont vérifiées au COMMIT (triggers différés)
 
 
--- ---------------------------------------------------------------------
---  Fonction utilitaire : nombre de participations d'un concurrent
---  à un rallye donné (toutes années confondues). Cf. requête 7.
---  Exemple : SELECT nb_participations(42, 'Paris-Dakar');
--- ---------------------------------------------------------------------
+-- Nombre de participations d'un concurrent à un rallye
 CREATE OR REPLACE FUNCTION nb_participations(p_numConcurrent INTEGER,
                                              p_nomRallye     VARCHAR)
 RETURNS INTEGER
@@ -38,9 +15,7 @@ AS $$
 $$;
 
 
--- =====================================================================
---  C12 : un équipage = exactement 2 concurrents et 1 véhicule (pilote)
--- =====================================================================
+-- C12 : 2 concurrents et 1 véhicule par équipage
 CREATE OR REPLACE FUNCTION verif_equipage(p_nomRallye VARCHAR,
                                           p_annee     INTEGER,
                                           p_num       INTEGER)
@@ -50,7 +25,7 @@ AS $$
 DECLARE
     nb INTEGER;
 BEGIN
-    -- L'équipage a pu être supprimé entre-temps : rien à vérifier.
+    -- équipage supprimé
     PERFORM 1 FROM equipage
      WHERE nomRallye = p_nomRallye AND annee = p_annee AND numEquipage = p_num;
     IF NOT FOUND THEN
@@ -73,7 +48,6 @@ BEGIN
 END;
 $$;
 
--- Déclenché par une modification de compose ou de pilote
 CREATE OR REPLACE FUNCTION trg_c12_lien()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -89,7 +63,6 @@ BEGIN
 END;
 $$;
 
--- Déclenché par la création d'un équipage
 CREATE OR REPLACE FUNCTION trg_c12_equipage()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -116,9 +89,7 @@ CREATE CONSTRAINT TRIGGER c12_pilote
     FOR EACH ROW EXECUTE FUNCTION trg_c12_lien();
 
 
--- =====================================================================
---  C13 : une équipe association panache au moins 2 marques
--- =====================================================================
+-- C13 : au moins 2 marques par association
 CREATE OR REPLACE FUNCTION trg_c13_association()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -158,12 +129,7 @@ CREATE CONSTRAINT TRIGGER c13_panache
     FOR EACH ROW EXECUTE FUNCTION trg_c13_association();
 
 
--- =====================================================================
---  C14 : la marque du véhicule d'un équipage fait partie des marques
---  de son équipe (marque de l'équipe officielle, ou l'une des marques
---  panachées de l'association). Vérifiée immédiatement : l'équipe et
---  ses marques doivent donc exister avant l'affectation du véhicule.
--- =====================================================================
+-- C14 : la marque du véhicule est une marque de l'équipe
 CREATE OR REPLACE FUNCTION trg_c14_marque()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -196,18 +162,13 @@ CREATE TRIGGER c14_pilote
     FOR EACH ROW EXECUTE FUNCTION trg_c14_marque();
 
 
--- =====================================================================
---  C15 (totalité) : toute étape a sa ligne dans speciale ou liaison,
---  toute équipe a sa ligne dans officielle ou association.
---  L'exclusivité est déjà garantie par les clés étrangères sur
---  (…, typeEtape) et (nomEquipe, typeEquipe) : voir 01_tables.sql.
--- =====================================================================
+-- C15 : toute étape / équipe a sa ligne de sous-type
 CREATE OR REPLACE FUNCTION trg_c15_etape()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- L'étape a pu être supprimée avant le COMMIT
+    -- étape supprimée
     PERFORM 1 FROM etape
      WHERE nomRallye = NEW.nomRallye AND annee = NEW.annee AND numEtape = NEW.numEtape;
     IF NOT FOUND THEN

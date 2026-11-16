@@ -1,15 +1,4 @@
--- =====================================================================
---  Gestion des rallyes sportifs - 03 : vues (PostgreSQL)
--- ---------------------------------------------------------------------
---  Les vues regroupent les jointures récurrentes : les requêtes du sujet
---  et l'application s'écrivent ensuite plus simplement.
--- =====================================================================
-
--- ---------------------------------------------------------------------
---  v_participation : une ligne par concurrent et par rallye couru,
---  avec son équipage, son équipe et son véhicule.
---  Utilisée par les requêtes 1, 4, 5 et 7.
--- ---------------------------------------------------------------------
+-- Une ligne par concurrent et par rallye (requêtes 1, 4, 5, 7)
 CREATE OR REPLACE VIEW v_participation AS
 SELECT c.nomRallye,
        c.annee,
@@ -34,12 +23,7 @@ JOIN pilote     p  ON (p.nomRallye, p.annee, p.numEquipage)
 JOIN vehicule   v  ON v.numeroSerie = p.numeroSerie;
 
 
--- ---------------------------------------------------------------------
---  v_classement_etape : classement des équipages à chaque étape.
---  Les équipages disqualifiés apparaissent sans rang (contrainte C7) et
---  ne décalent pas le classement des autres.
---  Utilisée par la requête 6.
--- ---------------------------------------------------------------------
+-- Classement par étape, sans rang pour les disqualifiés (C7, requête 6)
 CREATE OR REPLACE VIEW v_classement_etape AS
 SELECT r.nomRallye,
        r.annee,
@@ -63,10 +47,7 @@ JOIN pilote   p  ON (p.nomRallye, p.annee, p.numEquipage)
                   = (r.nomRallye, r.annee, r.numEquipage);
 
 
--- ---------------------------------------------------------------------
---  v_etape_pays : chaque étape avec la liste des pays traversés.
---  Pratique pour l'affichage dans l'application.
--- ---------------------------------------------------------------------
+-- Étapes avec la liste des pays traversés
 CREATE OR REPLACE VIEW v_etape_pays AS
 SELECT et.nomRallye,
        et.annee,
@@ -82,10 +63,7 @@ LEFT JOIN traverse t ON (t.nomRallye, t.annee, t.numEtape)
 GROUP BY et.nomRallye, et.annee, et.numEtape;
 
 
--- ---------------------------------------------------------------------
---  v_rallye_stats : chiffres clés de chaque rallye.
---  Utilisée par la requête 4.
--- ---------------------------------------------------------------------
+-- Nombre d'étapes, d'équipages et de concurrents par rallye (requête 4)
 CREATE OR REPLACE VIEW v_rallye_stats AS
 SELECT r.nomRallye,
        r.annee,

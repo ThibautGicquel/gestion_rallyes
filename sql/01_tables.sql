@@ -1,25 +1,4 @@
--- =====================================================================
---  Gestion des rallyes sportifs - 01 : tables et contraintes (PostgreSQL)
--- ---------------------------------------------------------------------
---  Adapté du script "Standard SQL" généré par DB-Main (schéma
---  GestionRallyes/Logique). Modifications par rapport au script généré :
---   * types adaptés à PostgreSQL (INTEGER, BIGINT, BOOLEAN, NUMERIC) ;
---   * compose : colonne numEquipage rétablie (clé étrangère vers EQUIPAGE) ;
---   * colonnes indicatrices de sous-types (SPECIALE/LIAISON, OFFICIELLE/
---     ASSOCIATION) remplacées par une colonne discriminante typeEtape /
---     typeEquipe, reprise dans les tables des sous-types : l'exclusivité
---     des partitions (C15) est ainsi garantie par les clés étrangères ;
---   * CHECK (exists (select ...)) supprimés : PostgreSQL n'accepte pas de
---     sous-requête dans un CHECK. Les contraintes concernées sont gérées
---     par triggers (04_triggers.sql) ou documentées dans le rapport ;
---   * CHECK métier ajoutés (contraintes C1 à C5) ;
---   * clés primaires réordonnées pour commencer par le rallye, ce qui sert
---     les requêtes filtrées par (nomRallye, annee).
---
---  Les noms non entre guillemets sont convertis en minuscules par
---  PostgreSQL : numConcurrent devient numconcurrent dans le catalogue.
---  Le script est rejouable : il supprime d'abord les tables existantes.
--- =====================================================================
+-- Tables et contraintes (d'après le script DB-Main)
 
 DROP TABLE IF EXISTS resultat, traverse, pilote, compose, equipage,
                      speciale, liaison, etape,
@@ -29,9 +8,7 @@ DROP TABLE IF EXISTS resultat, traverse, pilote, compose, equipage,
                      rallye, pays, marque, sponsor, fournisseur CASCADE;
 
 
--- ---------------------------------------------------------------------
---  Tables de référence
--- ---------------------------------------------------------------------
+-- Tables de référence
 
 CREATE TABLE pays (
     nomPays         VARCHAR(30)  PRIMARY KEY
@@ -56,9 +33,7 @@ CREATE TABLE rallye (
 );
 
 
--- ---------------------------------------------------------------------
---  Étapes et sous-types (partition SPECIALE / LIAISON)
--- ---------------------------------------------------------------------
+-- Étapes (SPECIALE / LIAISON)
 
 CREATE TABLE etape (
     nomRallye       VARCHAR(50)  NOT NULL,
@@ -70,7 +45,7 @@ CREATE TABLE etape (
     typeEtape       VARCHAR(8)   NOT NULL
                     CHECK (typeEtape IN ('SPECIALE', 'LIAISON')),        -- C15
     PRIMARY KEY (nomRallye, annee, numEtape),
-    -- cible des clés étrangères des sous-types (exclusivité, C15)
+    -- C15
     UNIQUE (nomRallye, annee, numEtape, typeEtape),
     FOREIGN KEY (nomRallye, annee) REFERENCES rallye (nomRallye, annee)
 );
@@ -107,16 +82,14 @@ CREATE TABLE traverse (
     nomRallye       VARCHAR(50)  NOT NULL,
     annee           INTEGER      NOT NULL,
     numEtape        INTEGER      NOT NULL,
-    -- nomPays en tête : sert directement les requêtes 2 et 3
+    -- nomPays en tête pour les requêtes 2 et 3
     PRIMARY KEY (nomPays, nomRallye, annee, numEtape),
     FOREIGN KEY (nomRallye, annee, numEtape)
         REFERENCES etape (nomRallye, annee, numEtape) ON DELETE CASCADE
 );
 
 
--- ---------------------------------------------------------------------
---  Équipes et sous-types (partition OFFICIELLE / ASSOCIATION)
--- ---------------------------------------------------------------------
+-- Équipes (OFFICIELLE / ASSOCIATION)
 
 CREATE TABLE equipe (
     nomEquipe       VARCHAR(50)   PRIMARY KEY,
@@ -151,9 +124,7 @@ CREATE TABLE panache (
 );
 
 
--- ---------------------------------------------------------------------
---  Concurrents et véhicules
--- ---------------------------------------------------------------------
+-- Concurrents et véhicules
 
 CREATE TABLE concurrent (
     numConcurrent   INTEGER      PRIMARY KEY,
@@ -172,9 +143,7 @@ CREATE TABLE vehicule (
 );
 
 
--- ---------------------------------------------------------------------
---  Équipages
--- ---------------------------------------------------------------------
+-- Équipages
 
 CREATE TABLE equipage (
     nomRallye       VARCHAR(50)  NOT NULL,
@@ -190,7 +159,7 @@ CREATE TABLE compose (
     annee           INTEGER      NOT NULL,
     numConcurrent   INTEGER      NOT NULL REFERENCES concurrent (numConcurrent),
     numEquipage     INTEGER      NOT NULL,
-    -- C8 : un concurrent n'a qu'un seul équipage par rallye
+    -- C8
     PRIMARY KEY (nomRallye, annee, numConcurrent),
     FOREIGN KEY (nomRallye, annee, numEquipage)
         REFERENCES equipage (nomRallye, annee, numEquipage) ON DELETE CASCADE
@@ -210,9 +179,7 @@ CREATE TABLE pilote (
 );
 
 
--- ---------------------------------------------------------------------
---  Résultats
--- ---------------------------------------------------------------------
+-- Résultats
 
 CREATE TABLE resultat (
     nomRallye       VARCHAR(50)  NOT NULL,
@@ -221,11 +188,10 @@ CREATE TABLE resultat (
     numEquipage     INTEGER      NOT NULL,
     dureeHeure      NUMERIC(8,4) CHECK (dureeHeure > 0),                 -- C3 (heures)
     disqualifiee    BOOLEAN      NOT NULL DEFAULT FALSE,                 -- C2
-    -- C5 : un équipage non disqualifié a obligatoirement une durée
+    -- C5
     CHECK (disqualifiee OR dureeHeure IS NOT NULL),
     PRIMARY KEY (nomRallye, annee, numEtape, numEquipage),
-    -- C11 : nomRallye et annee sont partagés par les deux clés étrangères,
-    -- l'étape et l'équipage appartiennent donc forcément au même rallye
+    -- C11 : étape et équipage du même rallye
     FOREIGN KEY (nomRallye, annee, numEtape)
         REFERENCES etape (nomRallye, annee, numEtape) ON DELETE CASCADE,
     FOREIGN KEY (nomRallye, annee, numEquipage)
@@ -233,9 +199,7 @@ CREATE TABLE resultat (
 );
 
 
--- ---------------------------------------------------------------------
---  Sponsoring et fourniture
--- ---------------------------------------------------------------------
+-- Sponsoring et fourniture
 
 CREATE TABLE sponsorise_rallye (
     nomRallye       VARCHAR(50)  NOT NULL,

@@ -1,10 +1,3 @@
--- =====================================================================
---  Gestion des rallyes sportifs - 05 : requêtes du sujet (PostgreSQL)
--- ---------------------------------------------------------------------
---  Préfixer une requête par EXPLAIN ANALYZE affiche son plan
---  d'exécution et son temps réel (utile pour le rapport).
--- =====================================================================
-
 -- 1) Participants du rallye Paris-Dakar 2000 en catégorie moto,
 --    par ordre alphabétique
 SELECT nom, prenom
@@ -14,8 +7,6 @@ WHERE nomRallye = 'Paris-Dakar' AND annee = 2000
 ORDER BY nom, prenom;
 
 -- 2) Nombre d'étapes se déroulant au Sénégal
---    (une étape traversant plusieurs pays n'est comptée qu'une fois :
---    clé primaire de traverse)
 SELECT count(*) AS nbEtapes
 FROM traverse
 WHERE nomPays = 'Sénégal';
@@ -36,8 +27,7 @@ WHERE nbConcurrents >= (SELECT nbConcurrents FROM v_rallye_stats
 ORDER BY nbConcurrents DESC, nomRallye, annee;
 
 -- 5) Nombre de véhicules Toyota ayant participé au Paris-Dakar
---    sur les dix dernières années (véhicules distincts : un même
---    véhicule peut courir plusieurs éditions)
+--    sur les dix dernières années
 SELECT count(DISTINCT p.numeroSerie) AS nbVehicules
 FROM pilote p
 JOIN vehicule v ON v.numeroSerie = p.numeroSerie
@@ -46,7 +36,6 @@ WHERE v.nomMarque = 'Toyota'
   AND p.annee > EXTRACT(YEAR FROM CURRENT_DATE) - 10;
 
 -- 6) Classement des équipages par étape pour le Paris-Dakar 2002
---    (les disqualifiés apparaissent en fin d'étape, sans rang)
 SELECT numEtape, typeEtape, rang, numEquipage, numeroOrga, nomEquipe,
        dureeHeure, disqualifiee
 FROM v_classement_etape

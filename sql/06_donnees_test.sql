@@ -1,11 +1,4 @@
--- =====================================================================
---  Gestion des rallyes sportifs - 06 : petit jeu de données de test
--- ---------------------------------------------------------------------
---  Quelques lignes pour vérifier que la base fonctionne avant le vrai
---  notebook d'alimentation. Tout est inséré dans une seule transaction :
---  les triggers C12, C13 et C15 sont vérifiés au COMMIT.
---  À exécuter sur une base vide (juste après 00_init.sql).
--- =====================================================================
+-- Petit jeu de test, sur une base vide
 BEGIN;
 INSERT INTO pays VALUES ('France'),('Sénégal'),('Mauritanie');
 INSERT INTO marque VALUES ('Toyota'),('Honda'),('Mazda');
