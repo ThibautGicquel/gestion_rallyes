@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titre %}Connexion{% endblock %}
+
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-sm-8 col-md-6 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-3">Connexion</h1>
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          {% for champ in [form.login, form.motDePasse] %}
+          <div class="mb-3">
+            {{ champ.label(class="form-label") }}
+            {{ champ(class="form-control" + (" is-invalid" if champ.errors else ""),
+                     autocomplete="username" if champ.name == "login" else "current-password") }}
+            {% for erreur in champ.errors %}<div class="invalid-feedback">{{ erreur }}</div>{% endfor %}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+        </form>
+      </div>
+    </div>
+    <p class="text-body-secondary small mt-3">
+      La consultation ne nécessite pas de compte. La saisie est réservée aux organisateurs
+      et aux administrateurs.
+    </p>
+  </div>
+</div>
+{% endblock %}

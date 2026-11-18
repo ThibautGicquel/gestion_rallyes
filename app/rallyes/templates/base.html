@@ -22,6 +22,20 @@
         <ul class="navbar-nav me-auto">
           {% block menu %}{% endblock %}
         </ul>
+        {% if current_user.is_authenticated %}
+        <form class="d-flex align-items-center gap-2" method="post" action="{{ url_for('auth.deconnexion') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <span class="navbar-text">
+            <i class="bi bi-person-circle"></i> {{ current_user.login }}
+            <span class="badge text-bg-{{ 'danger' if current_user.profil == 'administrateur' else 'warning' }}">{{ current_user.profil }}</span>
+          </span>
+          <button type="submit" class="btn btn-sm btn-outline-light">Déconnexion</button>
+        </form>
+        {% else %}
+        <a class="btn btn-sm btn-outline-light" href="{{ url_for('auth.connexion') }}">
+          <i class="bi bi-box-arrow-in-right"></i> Connexion
+        </a>
+        {% endif %}
       </div>
     </div>
   </nav>
