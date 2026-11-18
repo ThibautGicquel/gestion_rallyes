@@ -23,6 +23,8 @@
   {% endfor %}
 </div>
 
+<div class="row g-4">
+<div class="col-lg-7">
 <div class="card shadow-sm">
   <div class="card-header">Dernières éditions</div>
   <div class="table-responsive">
@@ -45,5 +47,17 @@
       </tbody>
     </table>
   </div>
+</div>
+</div>
+<div class="col-lg-5">
+  <div class="card shadow-sm">
+    <div class="card-header">Requêtes du sujet</div>
+    <div class="list-group list-group-flush">
+      {% for titre in requetes %}
+      <a class="list-group-item list-group-item-action small" href="{{ url_for('requetes.requete', numero=loop.index) }}">{{ titre }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 </div>
 {% endblock %}

@@ -3,6 +3,7 @@ from sqlalchemy import func, select
 
 from . import db
 from .modeles import Concurrent, Equipe, Etape, Rallye, Resultat, Vehicule, VRallyeStats
+from .requetes import lire_requetes
 
 bp = Blueprint("accueil", __name__)
 
@@ -26,4 +27,5 @@ def index():
         .order_by(VRallyeStats.annee.desc(), VRallyeStats.nomRallye)
         .limit(10)
     ).all()
-    return render_template("accueil.html", chiffres=chiffres, dernieres=dernieres)
+    return render_template("accueil.html", chiffres=chiffres, dernieres=dernieres,
+                           requetes=[titre for titre, _ in lire_requetes()])

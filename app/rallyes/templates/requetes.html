@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titre %}Requêtes du sujet{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-2">Requêtes du sujet</h1>
+<p class="text-body-secondary mb-4">
+  Les 7 requêtes de <code>sql/05_requetes.sql</code>, exécutées avec les valeurs de l'énoncé
+  ou avec d'autres valeurs au choix.
+</p>
+
+<div class="list-group shadow-sm">
+  {% for numero, titre, parametres in requetes %}
+  <a class="list-group-item list-group-item-action d-flex gap-3 py-3" href="{{ url_for('requetes.requete', numero=numero) }}">
+    <span class="badge text-bg-primary rounded-pill align-self-start fs-6">{{ numero }}</span>
+    <span>
+      <span class="d-block">{{ titre[3:] if titre[:2] == numero ~ ")" else titre }}</span>
+      {% if parametres %}
+      <span class="small text-body-secondary">
+        Paramètres : {% for p in parametres %}{{ p.libelle | lower }} ({{ p.defaut }}){{ ", " if not loop.last }}{% endfor %}
+      </span>
+      {% endif %}
+    </span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

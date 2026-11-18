@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block titre %}Requête {{ numero }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('requetes.index') }}">Requêtes du sujet</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Requête {{ numero }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <h1 class="h4 mb-0">{{ titre }}</h1>
+  <div class="btn-group btn-group-sm">
+    {% if numero > 1 %}<a class="btn btn-outline-secondary" href="{{ url_for('requetes.requete', numero=numero - 1) }}"><i class="bi bi-chevron-left"></i> {{ numero - 1 }}</a>{% endif %}
+    {% if numero < nb_requetes %}<a class="btn btn-outline-secondary" href="{{ url_for('requetes.requete', numero=numero + 1) }}">{{ numero + 1 }} <i class="bi bi-chevron-right"></i></a>{% endif %}
+  </div>
+</div>
+
+{% if parametres %}
+<form class="row g-2 align-items-end mb-3" method="get">
+  {% for p in parametres %}
+  <div class="col-sm-4 col-md-3">
+    <label class="form-label small" for="{{ p.nom }}">{{ p.libelle }}</label>
+    {% if p.genre in choix %}
+    <select class="form-select" id="{{ p.nom }}" name="{{ p.nom }}">
+      {% for v in choix[p.genre] %}<option {{ 'selected' if v == valeurs[p.nom] }}>{{ v }}</option>{% endfor %}
+    </select>
+    {% else %}
+    <input class="form-control" type="number" id="{{ p.nom }}" name="{{ p.nom }}" value="{{ valeurs[p.nom] }}"
+           min="{{ 1900 if p.genre == 'annee' else 1 }}" max="{{ 2100 if p.genre == 'annee' else 200 }}">
+    {% endif %}
+  </div>
+  {% endfor %}
+  <div class="col-auto">
+    <button class="btn btn-primary" type="submit"><i class="bi bi-play-fill"></i> Exécuter</button>
+    <a class="btn btn-link" href="{{ url_for('requetes.requete', numero=numero) }}">Valeurs de l'énoncé</a>
+  </div>
+</form>
+{% endif %}
+
+<details class="mb-3">
+  <summary class="text-body-secondary">Requête SQL exécutée</summary>
+  <pre class="bg-dark text-light rounded p-3 mt-2 mb-1"><code>{{ sql }}</code></pre>
+  <div class="small text-body-secondary">
+    {% for nom, valeur in valeurs.items() %}<code>:{{ nom }}</code> = {{ valeur }}{{ " · " if not loop.last }}{% endfor %}
+  </div>
+</details>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('requetes.export_csv', numero=numero, **valeurs) }}"><i class="bi bi-download"></i> Exporter en CSV</a>
+  {% if plan %}
+  <a class="btn btn-sm btn-outline-secondary active" href="{{ url_avec(plan=None) }}"><i class="bi bi-diagram-3"></i> Masquer le plan d'exécution</a>
+  {% else %}
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_avec(plan=1) }}"><i class="bi bi-diagram-3"></i> Plan d'exécution (EXPLAIN ANALYZE)</a>
+  {% endif %}
+</div>
+
+{% if plan %}
+<pre class="bg-body-secondary border rounded p-3 small">{{ plan | join("\n") }}</pre>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover table-sm align-middle mb-0">
+      <thead><tr>{% for e in entetes %}<th>{{ e }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for ligne in lignes %}
+        <tr>
+          {% for valeur, url in ligne %}
+          <td>{% if url %}<a href="{{ url }}">{{ valeur }}</a>{% else %}{{ valeur }}{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ entetes | length or 1 }}" class="text-center text-body-secondary">Aucun résultat.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ pagination(page) }}
+{% endblock %}

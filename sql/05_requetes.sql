@@ -40,11 +40,11 @@ SELECT numEtape, typeEtape, rang, numEquipage, numeroOrga, nomEquipe,
        dureeHeure, disqualifiee
 FROM v_classement_etape
 WHERE nomRallye = 'Paris-Dakar' AND annee = 2002
-ORDER BY numEtape, disqualifiee, rang;
+ORDER BY numEtape, disqualifiee, rang, numeroOrga;
 
 -- 7) Nombre de participations au Paris-Dakar par concurrent
 SELECT numConcurrent, nom, prenom, count(*) AS nbParticipations
 FROM v_participation
 WHERE nomRallye = 'Paris-Dakar'
 GROUP BY numConcurrent, nom, prenom
-ORDER BY nbParticipations DESC, nom, prenom;
+ORDER BY nbParticipations DESC, nom, prenom, numConcurrent;
