@@ -1,7 +1,23 @@
 """Tri, pagination et formats d'affichage communs aux pages."""
 from flask import request, url_for
+from flask_sqlalchemy.pagination import SelectPagination
 
 CATEGORIES = ["Auto", "Moto", "Camion"]
+
+
+class PaginationLignes(SelectPagination):
+    """Comme db.paginate, mais renvoie des lignes complètes (plusieurs colonnes)
+    au lieu de la seule première colonne."""
+
+    def _query_items(self):
+        requete = self._query_args["select"].limit(self.per_page).offset(self._query_offset)
+        return list(self._query_args["session"].execute(requete))
+
+
+def paginer_lignes(requete, par_page):
+    from . import db
+    return PaginationLignes(select=requete, session=db.session, per_page=par_page,
+                            error_out=False)
 
 
 class Tri:
@@ -56,6 +72,10 @@ def kilometres(valeur):
     return f"{nombre(round(valeur))} km" if valeur is not None else ""
 
 
+def euros(valeur):
+    return f"{nombre(round(valeur))} €" if valeur is not None else ""
+
+
 def ordinal(rang):
     return "" if rang is None else ("1er" if rang == 1 else f"{rang}e")
 
@@ -63,4 +83,5 @@ def ordinal(rang):
 def enregistrer(app):
     app.jinja_env.globals.update(url_avec=url_avec, CATEGORIES=CATEGORIES)
     app.jinja_env.filters.update(nombre=nombre, duree=duree, date_heure=date_heure,
-                                 km=kilometres, ordinal=ordinal)
+                                 km=kilometres, ordinal=ordinal,
+                                 euros=euros)

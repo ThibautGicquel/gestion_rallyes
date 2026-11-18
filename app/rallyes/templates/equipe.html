@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "macros.html" import categorie as badge_categorie, lien_equipage, lien_marque, liens_concurrents, type_equipe as badge_type %}
+{% block titre %}{{ equipe }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('annuaire.equipes') }}">Équipes</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ equipe.nomEquipe }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ equipe.nomEquipe }}</h1>
+  {{ badge_type(equipe.typeEquipe) }}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <dl class="mb-0">
+          <dt>Budget</dt><dd>{{ equipe.budget | euros }}</dd>
+          <dt>{{ "Marque représentée" if equipe.typeEquipe == "OFFICIELLE" else "Marques panachées" }}</dt>
+          <dd>{% for m in equipe.marques %}{{ lien_marque(m.nomMarque) }}{{ ", " if not loop.last }}{% endfor %}</dd>
+          <dt>Engagements</dt><dd class="mb-0">{{ nb_equipages }} équipage(s) sur {{ editions | length }} édition(s)</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Sponsors</div>
+      <div class="card-body">
+        {% for s in equipe.sponsors %}<span class="badge text-bg-light border me-1 mb-1">{{ s.nomSponsor }}</span>
+        {% else %}<span class="text-body-secondary">Aucun sponsor.</span>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="h5">Équipages engagés</h2>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Édition</th><th>N°</th><th>Catégorie</th><th>Véhicule</th><th>Concurrents</th></tr></thead>
+      <tbody>
+        {% for (nom, annee), equipages in editions %}
+          {% for eq in equipages %}
+          <tr>
+            {% if loop.first %}
+            <td rowspan="{{ equipages | length }}"><a href="{{ url_for('consultation.rallye', nom=nom, annee=annee) }}">{{ nom }} {{ annee }}</a></td>
+            {% endif %}
+            <td>{{ lien_equipage(nom, annee, eq.numEquipage, eq.pilote.numeroOrga) }}</td>
+            <td>{{ badge_categorie(eq.pilote.vehicule.type) }}</td>
+            <td>{{ eq.pilote.vehicule.nomMarque }}</td>
+            <td>{{ liens_concurrents(eq.concurrents) }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+        <tr><td colspan="5" class="text-center text-body-secondary">Aucun équipage engagé.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

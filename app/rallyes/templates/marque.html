@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "macros.html" import entete, pagination, categorie as badge_categorie, filtre_categories, lien_equipe, lien_vehicule %}
+{% block titre %}{{ marque.nomMarque }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('annuaire.marques') }}">Marques</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ marque.nomMarque }}</li>
+  </ol>
+</nav>
+
+<h1 class="h3 mb-3">{{ marque.nomMarque }}</h1>
+
+<div class="row g-3 mb-4">
+  {% for titre, liste in [("Équipes officielles", officielles), ("Associations (panachage)", associations)] %}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">{{ titre }}</div>
+      <ul class="list-group list-group-flush">
+        {% for e in liste %}
+        <li class="list-group-item">{{ lien_equipe(e.nomEquipe) }}
+          {% if e.typeEquipe == "ASSOCIATION" %}<span class="text-body-secondary small">({{ e.marques | map(attribute="nomMarque") | join(", ") }})</span>{% endif %}
+        </li>
+        {% else %}
+        <li class="list-group-item text-body-secondary">Aucune.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<h2 class="h5">Véhicules</h2>
+{{ filtre_categories(categorie) }}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          {{ entete(tri, "serie", "N° de série") }}
+          {{ entete(tri, "type", "Catégorie") }}
+          {{ entete(tri, "cylindree", "Cylindrée", "text-end") }}
+          {{ entete(tri, "participations", "Participations", "text-end") }}
+          {{ entete(tri, "derniere", "Dernière année", "text-end") }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in page %}
+        {% set v = ligne.Vehicule %}
+        <tr>
+          <td>{{ lien_vehicule(v.numeroSerie) }}</td>
+          <td>{{ badge_categorie(v.type) }}</td>
+          <td class="text-end">{{ v.cylindree | nombre }} cm³</td>
+          <td class="text-end">{{ ligne.participations }}</td>
+          <td class="text-end">{{ ligne.derniere or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ pagination(page) }}
+{% endblock %}

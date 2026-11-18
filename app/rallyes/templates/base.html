@@ -23,7 +23,11 @@
           {# (libellé, page, pages pour lesquelles l'entrée est surlignée) #}
           {% for libelle, endpoint, pages in [
                ("Rallyes", "consultation.rallyes",
-                ["consultation.rallyes", "consultation.rallye", "consultation.etape", "consultation.equipage"])] %}
+                ["consultation.rallyes", "consultation.rallye", "consultation.etape", "consultation.equipage"]),
+               ("Concurrents", "annuaire.concurrents", ["annuaire.concurrents", "annuaire.concurrent"]),
+               ("Équipes", "annuaire.equipes", ["annuaire.equipes", "annuaire.equipe"]),
+               ("Marques", "annuaire.marques", ["annuaire.marques", "annuaire.marque", "annuaire.vehicule"]),
+               ("Pays", "annuaire.pays_liste", ["annuaire.pays_liste", "annuaire.pays"])] %}
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint in pages }}" href="{{ url_for(endpoint) }}">{{ libelle }}</a>
           </li>

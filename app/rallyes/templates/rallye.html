@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import entete, pagination, categorie as badge_categorie, type_etape, filtre_categories, lien_equipage %}
+{% from "macros.html" import entete, pagination, categorie as badge_categorie, type_etape, filtre_categories, lien_equipage, lien_equipe, lien_marque, lien_pays, liens_concurrents %}
 {% block titre %}{{ rallye }}{% endblock %}
 
 {% block contenu %}
@@ -41,7 +41,7 @@
           <td>{{ e.villeDepart }}</td>
           <td>{{ e.villeArrivee }}{% if e.villeDepart == e.villeArrivee %} <span class="badge text-bg-light border" title="Même ville au départ et à l'arrivée">boucle</span>{% endif %}</td>
           <td class="text-end">{{ e.distance | km }}</td>
-          <td>{{ e.pays or "" }}</td>
+          <td>{% for p in (e.pays or "").split(", ") if p %}{{ lien_pays(p) }}{{ ", " if not loop.last }}{% endfor %}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -68,9 +68,9 @@
         <tr>
           <td>{{ lien_equipage(eq.nomRallye, eq.annee, eq.numEquipage, eq.pilote.numeroOrga) }}</td>
           <td>{{ badge_categorie(eq.pilote.vehicule.type) }}</td>
-          <td>{{ eq.equipe.nomEquipe }}</td>
-          <td>{{ eq.pilote.vehicule.nomMarque }} <span class="text-body-secondary small">{{ eq.pilote.vehicule.cylindree | nombre }} cm³</span></td>
-          <td>{{ eq.concurrents | join(" / ") }}</td>
+          <td>{{ lien_equipe(eq.equipe.nomEquipe) }}</td>
+          <td>{{ lien_marque(eq.pilote.vehicule.nomMarque) }} <span class="text-body-secondary small">{{ eq.pilote.vehicule.cylindree | nombre }} cm³</span></td>
+          <td>{{ liens_concurrents(eq.concurrents) }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -101,8 +101,8 @@
           <td>{{ badge_categorie(c.categorie) }}</td>
           <td>{{ c.numeroOrga }}</td>
           <td>{{ lien_equipage(rallye.nomRallye, rallye.annee, c.numEquipage, noms.get(c.numEquipage, "")) }}</td>
-          <td>{{ c.nomEquipe }}</td>
-          <td>{{ c.nomMarque }}</td>
+          <td>{{ lien_equipe(c.nomEquipe) }}</td>
+          <td>{{ lien_marque(c.nomMarque) }}</td>
           <td class="text-end duree">{{ c.total | duree }}</td>
           <td class="text-end duree text-body-secondary">{{ c.ecart | duree(true) if c.rang > 1 else "" }}</td>
         </tr>

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination, type_etape, lien_pays, boutons_filtre %}
+{% block titre %}{{ pays.nomPays }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('annuaire.pays_liste') }}">Pays</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ pays.nomPays }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ pays.nomPays }}</h1>
+  {% if nb_concurrents %}
+  <a href="{{ url_for('annuaire.concurrents', pays=pays.nomPays) }}">{{ nb_concurrents | nombre }} concurrent(s) de cette nationalité</a>
+  {% endif %}
+</div>
+
+<h2 class="h5">Étapes se déroulant dans ce pays <span class="badge text-bg-secondary">{{ page.total | nombre }}</span></h2>
+<form class="row g-2 align-items-end mb-3" method="get">
+  <div class="col-sm-5 col-md-4">
+    <label class="form-label small" for="rallye">Rallye</label>
+    <select class="form-select" id="rallye" name="rallye">
+      <option value="">Tous</option>
+      {% for n in noms %}<option {{ 'selected' if n == rallye }}>{{ n }}</option>{% endfor %}
+    </select>
+  </div>
+  {{ boutons_filtre(rallye, url_for('annuaire.pays', nom=pays.nomPays)) }}
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Rallye</th><th>Étape</th><th>Type</th><th>Départ</th><th>Arrivée</th><th class="text-end">Distance</th><th>Pays traversés</th></tr>
+      </thead>
+      <tbody>
+        {% for e in page %}
+        <tr>
+          <td><a href="{{ url_for('consultation.rallye', nom=e.nomRallye, annee=e.annee) }}">{{ e.nomRallye }} {{ e.annee }}</a></td>
+          <td><a href="{{ url_for('consultation.etape', nom=e.nomRallye, annee=e.annee, num=e.numEtape) }}">{{ e.numEtape }}</a></td>
+          <td>{{ type_etape(e.typeEtape) }}</td>
+          <td>{{ e.villeDepart }}</td>
+          <td>{{ e.villeArrivee }}</td>
+          <td class="text-end">{{ e.distance | km }}</td>
+          <td>{% for p in (e.pays or "").split(", ") if p %}{{ p if p == pays.nomPays else lien_pays(p) }}{{ ", " if not loop.last }}{% endfor %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ pagination(page) }}
+{% endblock %}

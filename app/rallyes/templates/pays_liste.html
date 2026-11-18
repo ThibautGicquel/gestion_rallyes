@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "macros.html" import entete, lien_pays %}
+{% block titre %}Pays{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-3">Pays</h1>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          {{ entete(tri, "nom", "Pays") }}
+          {{ entete(tri, "etapes", "Étapes traversant le pays", "text-end") }}
+          {{ entete(tri, "concurrents", "Concurrents de cette nationalité", "text-end") }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in lignes %}
+        <tr>
+          <td>{{ lien_pays(p.nom) }}</td>
+          <td class="text-end">{{ p.etapes | nombre }}</td>
+          <td class="text-end">
+            {% if p.concurrents %}<a href="{{ url_for('annuaire.concurrents', pays=p.nom) }}">{{ p.concurrents | nombre }}</a>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

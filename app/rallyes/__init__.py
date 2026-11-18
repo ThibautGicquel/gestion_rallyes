@@ -39,10 +39,12 @@ def create_app(config=Config):
 
     from .accueil import bp as accueil
     from .auth import bp as auth
+    from .annuaire import bp as annuaire
     from .consultation import bp as consultation
     app.register_blueprint(accueil)
     app.register_blueprint(auth)
     app.register_blueprint(consultation)
+    app.register_blueprint(annuaire)
 
     if app.config["COMPTES_DEMO"]:
         creer_comptes_demo(app)

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "macros.html" import entete, pagination, recherche, boutons_filtre, lien_concurrent, lien_pays %}
+{% block titre %}Concurrents{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-3">Concurrents</h1>
+
+<form class="row g-2 align-items-end mb-3" method="get">
+  {{ recherche(q, "Nom, prénom ou numéro") }}
+  <div class="col-sm-4 col-md-3">
+    <label class="form-label small" for="pays">Nationalité</label>
+    <select class="form-select" id="pays" name="pays">
+      <option value="">Toutes</option>
+      {% for p in tous_pays %}<option {{ 'selected' if p == pays }}>{{ p }}</option>{% endfor %}
+    </select>
+  </div>
+  {{ boutons_filtre(q or pays, url_for('annuaire.concurrents')) }}
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          {{ entete(tri, "nom", "Nom") }}
+          {{ entete(tri, "pays", "Nationalité") }}
+          <th>Adresse</th>
+          {{ entete(tri, "participations", "Participations", "text-end") }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ligne in page %}
+        {% set c = ligne.Concurrent %}
+        <tr>
+          <td>{{ lien_concurrent(c) }}</td>
+          <td>{{ lien_pays(c.nomPays) }}</td>
+          <td class="small text-body-secondary">{{ c.adresse }}</td>
+          <td class="text-end">{{ ligne.participations }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ pagination(page) }}
+{% endblock %}

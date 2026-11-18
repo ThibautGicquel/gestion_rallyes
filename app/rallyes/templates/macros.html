@@ -56,3 +56,36 @@
 {% macro lien_equipage(nom, annee, num, texte) %}
 <a href="{{ url_for('consultation.equipage', nom=nom, annee=annee, num=num) }}">{{ texte }}</a>
 {% endmacro %}
+
+{% macro lien_equipe(nom) %}<a href="{{ url_for('annuaire.equipe', nom=nom) }}">{{ nom }}</a>{% endmacro %}
+
+{% macro lien_marque(nom) %}<a href="{{ url_for('annuaire.marque', nom=nom) }}">{{ nom }}</a>{% endmacro %}
+
+{% macro lien_pays(nom) %}<a href="{{ url_for('annuaire.pays', nom=nom) }}">{{ nom }}</a>{% endmacro %}
+
+{% macro lien_vehicule(serie) %}<a href="{{ url_for('annuaire.vehicule', serie=serie) }}">{{ serie }}</a>{% endmacro %}
+
+{% macro lien_concurrent(c) %}<a href="{{ url_for('annuaire.concurrent', num=c.numConcurrent) }}">{{ c.prenom }} {{ c.nom }}</a>{% endmacro %}
+
+{# Liste de concurrents liés, séparés par " / " #}
+{% macro liens_concurrents(liste) %}{% for c in liste %}{{ lien_concurrent(c) }}{{ " / " if not loop.last }}{% endfor %}{% endmacro %}
+
+{# Champ de recherche + bouton, à placer dans un formulaire GET #}
+{% macro recherche(q, indication) %}
+<div class="col-sm-6 col-md-4">
+  <label class="form-label small" for="q">Recherche</label>
+  <input class="form-control" type="search" id="q" name="q" value="{{ q }}" placeholder="{{ indication }}">
+</div>
+{% endmacro %}
+
+{% macro boutons_filtre(actif, url_effacer) %}
+<div class="col-auto">
+  <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Filtrer</button>
+  {% if actif %}<a class="btn btn-link" href="{{ url_effacer }}">Effacer</a>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro type_equipe(type) %}
+{% if type == "OFFICIELLE" %}<span class="badge text-bg-dark">Officielle</span>
+{% else %}<span class="badge text-bg-info">Association</span>{% endif %}
+{% endmacro %}

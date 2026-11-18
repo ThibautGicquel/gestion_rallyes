@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "macros.html" import categorie as badge_categorie, lien_equipage, lien_equipe, lien_marque, liens_concurrents %}
+{% block titre %}Véhicule {{ vehicule.numeroSerie }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('annuaire.marques') }}">Marques</a></li>
+    <li class="breadcrumb-item">{{ lien_marque(vehicule.nomMarque) }}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{ vehicule.numeroSerie }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ vehicule.nomMarque }} · {{ vehicule.numeroSerie }}</h1>
+  {{ badge_categorie(vehicule.type) }}
+</div>
+<p class="text-body-secondary">Cylindrée {{ vehicule.cylindree | nombre }} cm³ · {{ pilotages | length }} participation(s)</p>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Rallye</th><th>N°</th><th>Équipe</th><th>Concurrents</th></tr></thead>
+      <tbody>
+        {% for p in pilotages %}
+        <tr>
+          <td><a href="{{ url_for('consultation.rallye', nom=p.nomRallye, annee=p.annee) }}">{{ p.nomRallye }} {{ p.annee }}</a></td>
+          <td>{{ lien_equipage(p.nomRallye, p.annee, p.numEquipage, p.numeroOrga) }}</td>
+          <td>{{ lien_equipe(p.equipage.nomEquipe) }}</td>
+          <td>{{ liens_concurrents(p.equipage.concurrents) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-body-secondary">Ce véhicule n'a couru aucun rallye.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

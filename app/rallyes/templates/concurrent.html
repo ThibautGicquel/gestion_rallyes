@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "macros.html" import categorie as badge_categorie, lien_equipage, lien_equipe, lien_marque, lien_pays, liens_concurrents %}
+{% block titre %}{{ concurrent }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('annuaire.concurrents') }}">Concurrents</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ concurrent }}</li>
+  </ol>
+</nav>
+
+<h1 class="h3 mb-3">{{ concurrent.prenom }} {{ concurrent.nom }}</h1>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Numéro</dt><dd class="col-sm-8">{{ concurrent.numConcurrent }}</dd>
+          <dt class="col-sm-4">Nationalité</dt><dd class="col-sm-8">{{ lien_pays(concurrent.nomPays) }}</dd>
+          <dt class="col-sm-4">Adresse</dt><dd class="col-sm-8">{{ concurrent.adresse }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Participations : {{ historique | length }}</div>
+      <ul class="list-group list-group-flush">
+        {% for nom, nb in par_rallye %}
+        <li class="list-group-item d-flex justify-content-between">{{ nom }} <span class="badge text-bg-secondary rounded-pill">{{ nb }}</span></li>
+        {% else %}
+        <li class="list-group-item text-body-secondary">Aucune participation.</li>
+        {% endfor %}
+      </ul>
+      <div class="card-footer small text-body-secondary">Comptées par la fonction SQL <code>nb_participations</code>.</div>
+    </div>
+  </div>
+</div>
+
+<h2 class="h5">Historique</h2>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Rallye</th><th>N°</th><th>Catégorie</th><th>Équipe</th><th>Véhicule</th><th>Coéquipier</th><th>Résultat</th></tr>
+      </thead>
+      <tbody>
+        {% for eq, statut in historique %}
+        <tr>
+          <td><a href="{{ url_for('consultation.rallye', nom=eq.nomRallye, annee=eq.annee) }}">{{ eq.rallye }}</a></td>
+          <td>{{ lien_equipage(eq.nomRallye, eq.annee, eq.numEquipage, eq.pilote.numeroOrga) }}</td>
+          <td>{{ badge_categorie(eq.pilote.vehicule.type) }}</td>
+          <td>{{ lien_equipe(eq.nomEquipe) }}</td>
+          <td>{{ lien_marque(eq.pilote.vehicule.nomMarque) }}</td>
+          <td>{{ liens_concurrents(eq.concurrents | rejectattr("numConcurrent", "equalto", concurrent.numConcurrent)) }}</td>
+          <td><span class="badge text-bg-{{ statut[0] }}">{{ statut[1] }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-body-secondary">Aucune participation.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

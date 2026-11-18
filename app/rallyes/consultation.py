@@ -204,19 +204,28 @@ def equipage(nom, annee, num):
         cumul += ligne.dureeHeure or 0
         resultats.append((ligne, cumul))
 
-    nb_etapes = len(equipage.rallye.etapes)
-    disqualification = next((l.Etape.numEtape for l in lignes if l.disqualifiee), None)
-    if disqualification:
-        statut = ("danger", f"Disqualifié à l'étape {disqualification}")
-    elif len(lignes) < nb_etapes:
-        dernier = lignes[-1].Etape.numEtape if lignes else 0
-        statut = ("secondary", f"Abandon après l'étape {dernier}")
-    else:
-        categorie = equipage.pilote.vehicule.type
-        rang = next((c.rang for c in classement_general(nom, annee, categorie)
-                     if c.numEquipage == num), None)
-        statut = ("success", f"Classé {ordinal(rang)} en {categorie.lower()}")
-
     return render_template("equipage.html", equipage=equipage, r=equipage.rallye,
                            v=equipage.pilote.vehicule, resultats=resultats,
-                           statut=statut, nb_etapes=nb_etapes)
+                           statut=statut_equipage(equipage),
+                           nb_etapes=len(equipage.rallye.etapes))
+
+
+def statut_equipage(equipage):
+    """(couleur, texte) : classé avec son rang, disqualifié ou abandon."""
+    nom, annee, num = equipage.nomRallye, equipage.annee, equipage.numEquipage
+    nb_resultats, disqualification, derniere = db.session.execute(
+        select(func.count(),
+               func.min(case((Resultat.disqualifiee, Resultat.numEtape))),
+               func.max(Resultat.numEtape))
+        .where(du_rallye(Resultat, nom, annee), Resultat.numEquipage == num)
+    ).one()
+    nb_etapes = db.session.scalar(
+        select(func.count()).select_from(Etape).where(du_rallye(Etape, nom, annee)))
+    if disqualification:
+        return "danger", f"Disqualifié à l'étape {disqualification}"
+    if nb_resultats < nb_etapes:
+        return "secondary", f"Abandon après l'étape {derniere or 0}"
+    categorie = equipage.pilote.vehicule.type
+    rang = next((c.rang for c in classement_general(nom, annee, categorie)
+                 if c.numEquipage == num), None)
+    return "success", f"Classé {ordinal(rang)} en {categorie.lower()}"

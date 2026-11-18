@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "macros.html" import entete, lien_marque %}
+{% block titre %}Marques{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-3">Marques</h1>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          {{ entete(tri, "nom", "Marque") }}
+          {{ entete(tri, "vehicules", "Véhicules", "text-end") }}
+          {{ entete(tri, "auto", "Auto", "text-end") }}
+          {{ entete(tri, "moto", "Moto", "text-end") }}
+          {{ entete(tri, "camion", "Camion", "text-end") }}
+          {{ entete(tri, "officielles", "Équipes officielles", "text-end") }}
+          {{ entete(tri, "associations", "Associations", "text-end") }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in lignes %}
+        <tr>
+          <td>{{ lien_marque(m.nom) }}</td>
+          <td class="text-end fw-semibold">{{ m.vehicules | nombre }}</td>
+          {% for c in ["auto", "moto", "camion"] %}<td class="text-end">{{ m[c] or "" }}</td>{% endfor %}
+          <td class="text-end">{{ m.officielles or "" }}</td>
+          <td class="text-end">{{ m.associations or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

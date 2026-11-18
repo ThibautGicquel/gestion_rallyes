@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import categorie as badge_categorie, type_etape %}
+{% from "macros.html" import categorie as badge_categorie, type_etape, lien_concurrent, lien_equipe, lien_marque, lien_pays, lien_vehicule %}
 {% block titre %}{{ r }} · n° {{ equipage.pilote.numeroOrga }}{% endblock %}
 
 {% block contenu %}
@@ -23,7 +23,7 @@
       <div class="card-header">Concurrents</div>
       <ul class="list-group list-group-flush">
         {% for c in equipage.concurrents %}
-        <li class="list-group-item">{{ c.prenom }} {{ c.nom }} <span class="text-body-secondary small">({{ c.nomPays }})</span></li>
+        <li class="list-group-item">{{ lien_concurrent(c) }} <span class="text-body-secondary small">({{ lien_pays(c.nomPays) }})</span></li>
         {% endfor %}
       </ul>
     </div>
@@ -32,10 +32,10 @@
     <div class="card shadow-sm h-100">
       <div class="card-header">Équipe</div>
       <div class="card-body">
-        <div class="fw-semibold">{{ equipage.equipe.nomEquipe }}</div>
+        <div class="fw-semibold">{{ lien_equipe(equipage.equipe.nomEquipe) }}</div>
         <div class="text-body-secondary small">
           {{ "Équipe officielle" if equipage.equipe.typeEquipe == "OFFICIELLE" else "Association" }} :
-          {{ equipage.equipe.marques | map(attribute="nomMarque") | join(", ") }}
+          {% for m in equipage.equipe.marques %}{{ lien_marque(m.nomMarque) }}{{ ", " if not loop.last }}{% endfor %}
         </div>
       </div>
     </div>
@@ -44,8 +44,8 @@
     <div class="card shadow-sm h-100">
       <div class="card-header">Véhicule</div>
       <div class="card-body">
-        <div class="fw-semibold">{{ v.nomMarque }}</div>
-        <div class="text-body-secondary small">N° de série {{ v.numeroSerie }} · {{ v.cylindree | nombre }} cm³</div>
+        <div class="fw-semibold">{{ lien_marque(v.nomMarque) }}</div>
+        <div class="text-body-secondary small">N° de série {{ lien_vehicule(v.numeroSerie) }} · {{ v.cylindree | nombre }} cm³</div>
       </div>
     </div>
   </div>

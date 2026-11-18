@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import categorie as badge_categorie, type_etape, filtre_categories, lien_equipage %}
+{% from "macros.html" import categorie as badge_categorie, type_etape, filtre_categories, lien_equipage, lien_equipe, lien_marque, lien_pays %}
 {% block titre %}{{ r }} · étape {{ etape.numEtape }}{% endblock %}
 
 {% block contenu %}
@@ -28,7 +28,7 @@
     <dl class="row mb-0">
       <dt class="col-sm-3">Type</dt><dd class="col-sm-9">{{ type_etape(etape.typeEtape) }}</dd>
       <dt class="col-sm-3">Distance</dt><dd class="col-sm-9">{{ etape.distance | km }}</dd>
-      <dt class="col-sm-3">Pays traversés</dt><dd class="col-sm-9">{{ etape.pays | map(attribute="nomPays") | join(", ") }}</dd>
+      <dt class="col-sm-3">Pays traversés</dt><dd class="col-sm-9">{% for p in etape.pays %}{{ lien_pays(p.nomPays) }}{{ ", " if not loop.last }}{% endfor %}</dd>
       {% if etape.est_speciale %}
       <dt class="col-sm-3">Tranche horaire</dt>
       <dd class="col-sm-9">du {{ etape.heureDebut | date_heure }} au {{ etape.heureFin | date_heure }} (UTC)
@@ -62,8 +62,8 @@
           {% if not categorie %}<td>{{ badge_categorie(c.categorie) }}</td>{% endif %}
           <td>{{ c.numeroOrga }}</td>
           <td>{{ lien_equipage(r.nomRallye, r.annee, c.numEquipage, noms.get(c.numEquipage, "")) }}</td>
-          <td>{{ c.nomEquipe }}</td>
-          <td>{{ c.nomMarque }}</td>
+          <td>{{ lien_equipe(c.nomEquipe) }}</td>
+          <td>{{ lien_marque(c.nomMarque) }}</td>
           <td class="text-end duree">{{ c.dureeHeure | duree if c.dureeHeure is not none else "hors délai" }}</td>
           <td class="text-end duree text-body-secondary">{{ c.ecart | duree(true) if c.ecart else "" }}</td>
         </tr>
