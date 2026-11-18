@@ -36,7 +36,7 @@
       <tbody>
         {% for r in dernieres %}
         <tr>
-          <td>{{ r.nomRallye }}</td><td>{{ r.annee }}</td>
+          <td><a href="{{ url_for('consultation.rallye', nom=r.nomRallye, annee=r.annee) }}">{{ r.nomRallye }}</a></td><td>{{ r.annee }}</td>
           <td class="text-end">{{ r.nbEtapes }}</td>
           <td class="text-end">{{ r.nbEquipages | nombre }}</td>
           <td class="text-end">{{ r.nbConcurrents | nombre }}</td>

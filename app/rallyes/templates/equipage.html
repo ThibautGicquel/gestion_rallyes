@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "macros.html" import categorie as badge_categorie, type_etape %}
+{% block titre %}{{ r }} · n° {{ equipage.pilote.numeroOrga }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes') }}">Rallyes</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallye', nom=r.nomRallye, annee=r.annee, onglet='equipages') }}">{{ r }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Équipage n° {{ equipage.pilote.numeroOrga }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Équipage n° {{ equipage.pilote.numeroOrga }}</h1>
+  {{ badge_categorie(v.type) }}
+  <span class="badge text-bg-{{ statut[0] }}">{{ statut[1] }}</span>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Concurrents</div>
+      <ul class="list-group list-group-flush">
+        {% for c in equipage.concurrents %}
+        <li class="list-group-item">{{ c.prenom }} {{ c.nom }} <span class="text-body-secondary small">({{ c.nomPays }})</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Équipe</div>
+      <div class="card-body">
+        <div class="fw-semibold">{{ equipage.equipe.nomEquipe }}</div>
+        <div class="text-body-secondary small">
+          {{ "Équipe officielle" if equipage.equipe.typeEquipe == "OFFICIELLE" else "Association" }} :
+          {{ equipage.equipe.marques | map(attribute="nomMarque") | join(", ") }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Véhicule</div>
+      <div class="card-body">
+        <div class="fw-semibold">{{ v.nomMarque }}</div>
+        <div class="text-body-secondary small">N° de série {{ v.numeroSerie }} · {{ v.cylindree | nombre }} cm³</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="h5">Résultats par étape <span class="text-body-secondary fw-normal fs-6">({{ resultats | length }} / {{ nb_etapes }})</span></h2>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Étape</th><th>Type</th><th>Parcours</th><th>Rang</th><th class="text-end">Temps</th><th class="text-end">Cumul</th></tr>
+      </thead>
+      <tbody>
+        {% for ligne, cumul in resultats %}
+        {% set e = ligne.Etape %}
+        <tr class="{{ 'table-danger' if ligne.disqualifiee }}">
+          <td><a href="{{ url_for('consultation.etape', nom=e.nomRallye, annee=e.annee, num=e.numEtape) }}">Étape {{ e.numEtape }}</a></td>
+          <td>{{ type_etape(e.typeEtape) }}</td>
+          <td>{{ e.villeDepart }} → {{ e.villeArrivee }}</td>
+          <td>{% if ligne.disqualifiee %}<span class="badge text-bg-danger">Disq.</span>{% else %}{{ ligne.rang | ordinal }}{% endif %}</td>
+          <td class="text-end duree">{{ ligne.dureeHeure | duree if ligne.dureeHeure is not none else "hors délai" }}</td>
+          <td class="text-end duree">{{ cumul | duree }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-body-secondary">Aucun résultat.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="small text-body-secondary mt-2">Rang de l'étape toutes catégories confondues.</p>
+{% endblock %}

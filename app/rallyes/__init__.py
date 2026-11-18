@@ -24,10 +24,8 @@ def create_app(config=Config):
     from .auth import creer_comptes_demo, login_manager
     login_manager.init_app(app)
 
-    @app.template_filter("nombre")
-    def nombre(valeur):
-        # 12345 -> "12 345"
-        return f"{valeur:,}".replace(",", " ") if valeur is not None else ""
+    from . import outils
+    outils.enregistrer(app)
 
     @app.errorhandler(403)
     def interdit(_):
@@ -41,8 +39,10 @@ def create_app(config=Config):
 
     from .accueil import bp as accueil
     from .auth import bp as auth
+    from .consultation import bp as consultation
     app.register_blueprint(accueil)
     app.register_blueprint(auth)
+    app.register_blueprint(consultation)
 
     if app.config["COMPTES_DEMO"]:
         creer_comptes_demo(app)

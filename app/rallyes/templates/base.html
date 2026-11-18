@@ -20,7 +20,14 @@
       </button>
       <div class="collapse navbar-collapse" id="menu">
         <ul class="navbar-nav me-auto">
-          {% block menu %}{% endblock %}
+          {# (libellé, page, pages pour lesquelles l'entrée est surlignée) #}
+          {% for libelle, endpoint, pages in [
+               ("Rallyes", "consultation.rallyes",
+                ["consultation.rallyes", "consultation.rallye", "consultation.etape", "consultation.equipage"])] %}
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint in pages }}" href="{{ url_for(endpoint) }}">{{ libelle }}</a>
+          </li>
+          {% endfor %}
         </ul>
         {% if current_user.is_authenticated %}
         <form class="d-flex align-items-center gap-2" method="post" action="{{ url_for('auth.deconnexion') }}">

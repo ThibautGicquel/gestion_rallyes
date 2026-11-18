@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% from "macros.html" import categorie as badge_categorie, type_etape, filtre_categories, lien_equipage %}
+{% block titre %}{{ r }} · étape {{ etape.numEtape }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes') }}">Rallyes</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallye', nom=r.nomRallye, annee=r.annee) }}">{{ r }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Étape {{ etape.numEtape }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Étape {{ etape.numEtape }} : {{ etape.villeDepart }} → {{ etape.villeArrivee }}</h1>
+  <div class="btn-group btn-group-sm">
+    {% if etape.numEtape > 1 %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('consultation.etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape - 1, categorie=categorie) }}"><i class="bi bi-chevron-left"></i> Étape {{ etape.numEtape - 1 }}</a>
+    {% endif %}
+    {% if etape.numEtape < nb_etapes %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('consultation.etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape + 1, categorie=categorie) }}">Étape {{ etape.numEtape + 1 }} <i class="bi bi-chevron-right"></i></a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Type</dt><dd class="col-sm-9">{{ type_etape(etape.typeEtape) }}</dd>
+      <dt class="col-sm-3">Distance</dt><dd class="col-sm-9">{{ etape.distance | km }}</dd>
+      <dt class="col-sm-3">Pays traversés</dt><dd class="col-sm-9">{{ etape.pays | map(attribute="nomPays") | join(", ") }}</dd>
+      {% if etape.est_speciale %}
+      <dt class="col-sm-3">Tranche horaire</dt>
+      <dd class="col-sm-9">du {{ etape.heureDebut | date_heure }} au {{ etape.heureFin | date_heure }} (UTC)
+        <div class="small text-body-secondary">Un équipage qui termine après la fin de la tranche est disqualifié.</div>
+      </dd>
+      {% else %}
+      <dt class="col-sm-3">Chronométrage</dt><dd class="col-sm-9">sans limite de temps</dd>
+      {% endif %}
+    </dl>
+  </div>
+</div>
+
+<h2 class="h5">Classement de l'étape</h2>
+{{ filtre_categories(categorie) }}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Rang</th>{% if not categorie %}<th>Catégorie</th>{% endif %}<th>N°</th><th>Équipage</th><th>Équipe</th><th>Marque</th>
+          <th class="text-end">Temps</th><th class="text-end">Écart</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in classement %}
+        <tr class="{{ 'table-danger' if c.disqualifiee }}">
+          <td class="fw-semibold">
+            {% if c.disqualifiee %}<span class="badge text-bg-danger">Disq.</span>
+            {% else %}{{ (c.rangCategorie if categorie else c.rang) | ordinal }}{% endif %}
+          </td>
+          {% if not categorie %}<td>{{ badge_categorie(c.categorie) }}</td>{% endif %}
+          <td>{{ c.numeroOrga }}</td>
+          <td>{{ lien_equipage(r.nomRallye, r.annee, c.numEquipage, noms.get(c.numEquipage, "")) }}</td>
+          <td>{{ c.nomEquipe }}</td>
+          <td>{{ c.nomMarque }}</td>
+          <td class="text-end duree">{{ c.dureeHeure | duree if c.dureeHeure is not none else "hors délai" }}</td>
+          <td class="text-end duree text-body-secondary">{{ c.ecart | duree(true) if c.ecart else "" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-body-secondary">Aucun résultat pour cette étape.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="small text-body-secondary mt-2">
+  {% if categorie %}Rang et écart calculés dans la catégorie {{ categorie | lower }}.
+  {% else %}Rang toutes catégories confondues (vue <code>v_classement_etape</code>), écart au meilleur temps de la catégorie.{% endif %}
+</p>
+{% endblock %}

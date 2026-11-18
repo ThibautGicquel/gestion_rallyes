@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "macros.html" import entete, pagination %}
+{% block titre %}Rallyes{% endblock %}
+
+{% block contenu %}
+<h1 class="h3 mb-3">Rallyes</h1>
+
+<form class="row g-2 align-items-end mb-3" method="get">
+  <div class="col-sm-5 col-md-4">
+    <label class="form-label small" for="nom">Rallye</label>
+    <select class="form-select" id="nom" name="nom">
+      <option value="">Tous</option>
+      {% for n in noms %}<option {{ 'selected' if n == nom }}>{{ n }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-3 col-md-2">
+    <label class="form-label small" for="annee">Année</label>
+    <input class="form-control" type="number" id="annee" name="annee" value="{{ annee or '' }}" min="1900" max="2100">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Filtrer</button>
+    {% if nom or annee %}<a class="btn btn-link" href="{{ url_for('consultation.rallyes') }}">Effacer</a>{% endif %}
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          {{ entete(tri, "nom", "Rallye") }}
+          {{ entete(tri, "annee", "Année") }}
+          {{ entete(tri, "etapes", "Étapes", "text-end") }}
+          {{ entete(tri, "equipages", "Équipages", "text-end") }}
+          {{ entete(tri, "concurrents", "Concurrents", "text-end") }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in page %}
+        <tr>
+          <td><a href="{{ url_for('consultation.rallye', nom=r.nomRallye, annee=r.annee) }}">{{ r.nomRallye }}</a></td>
+          <td>{{ r.annee }}</td>
+          <td class="text-end">{{ r.nbEtapes }}</td>
+          <td class="text-end">{{ r.nbEquipages | nombre }}</td>
+          <td class="text-end">{{ r.nbConcurrents | nombre }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ pagination(page) }}
+{% endblock %}

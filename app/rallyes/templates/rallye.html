@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% from "macros.html" import entete, pagination, categorie as badge_categorie, type_etape, filtre_categories, lien_equipage %}
+{% block titre %}{{ rallye }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes') }}">Rallyes</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes', nom=rallye.nomRallye) }}">{{ rallye.nomRallye }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ rallye.annee }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ rallye.nomRallye }} {{ rallye.annee }}</h1>
+  <div class="text-body-secondary">
+    {{ stats.nbEtapes }} étapes · {{ stats.nbEquipages | nombre }} équipages · {{ stats.nbConcurrents | nombre }} concurrents
+  </div>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  {% for cle, libelle in onglets.items() %}
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if cle == onglet }}" href="{{ url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee, onglet=cle) }}">{{ libelle }}</a>
+  </li>
+  {% endfor %}
+</ul>
+
+{% if onglet == "etapes" %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>N°</th><th>Type</th><th>Départ</th><th>Arrivée</th><th class="text-end">Distance</th><th>Pays traversés</th></tr>
+      </thead>
+      <tbody>
+        {% for e in etapes %}
+        <tr>
+          <td><a href="{{ url_for('consultation.etape', nom=e.nomRallye, annee=e.annee, num=e.numEtape) }}">Étape {{ e.numEtape }}</a></td>
+          <td>{{ type_etape(e.typeEtape) }}</td>
+          <td>{{ e.villeDepart }}</td>
+          <td>{{ e.villeArrivee }}{% if e.villeDepart == e.villeArrivee %} <span class="badge text-bg-light border" title="Même ville au départ et à l'arrivée">boucle</span>{% endif %}</td>
+          <td class="text-end">{{ e.distance | km }}</td>
+          <td>{{ e.pays or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% elif onglet == "equipages" %}
+{{ filtre_categories(categorie) }}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          {{ entete(tri, "numero", "N°") }}
+          {{ entete(tri, "categorie", "Catégorie") }}
+          {{ entete(tri, "equipe", "Équipe") }}
+          {{ entete(tri, "marque", "Véhicule") }}
+          <th>Concurrents</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eq in page %}
+        <tr>
+          <td>{{ lien_equipage(eq.nomRallye, eq.annee, eq.numEquipage, eq.pilote.numeroOrga) }}</td>
+          <td>{{ badge_categorie(eq.pilote.vehicule.type) }}</td>
+          <td>{{ eq.equipe.nomEquipe }}</td>
+          <td>{{ eq.pilote.vehicule.nomMarque }} <span class="text-body-secondary small">{{ eq.pilote.vehicule.cylindree | nombre }} cm³</span></td>
+          <td>{{ eq.concurrents | join(" / ") }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ pagination(page) }}
+
+{% elif onglet == "classement" %}
+{{ filtre_categories(categorie) }}
+<p class="text-body-secondary small">
+  Équipages ayant terminé toutes les étapes sans être disqualifiés, classés par catégorie selon leur temps cumulé.
+  {% for c in CATEGORIES if (not categorie or c == categorie) and partants.get(c) %}
+    {% set classes = classement | selectattr("categorie", "equalto", c) | list | length %}
+    <span class="ms-2">{{ badge_categorie(c) }} {{ classes }} classés sur {{ partants[c] }} partants</span>
+  {% endfor %}
+</p>
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Rang</th><th>Catégorie</th><th>N°</th><th>Équipage</th><th>Équipe</th><th>Marque</th><th class="text-end">Temps</th><th class="text-end">Écart</th></tr>
+      </thead>
+      <tbody>
+        {% for c in classement %}
+        <tr>
+          <td class="fw-semibold">{{ c.rang | ordinal }}</td>
+          <td>{{ badge_categorie(c.categorie) }}</td>
+          <td>{{ c.numeroOrga }}</td>
+          <td>{{ lien_equipage(rallye.nomRallye, rallye.annee, c.numEquipage, noms.get(c.numEquipage, "")) }}</td>
+          <td>{{ c.nomEquipe }}</td>
+          <td>{{ c.nomMarque }}</td>
+          <td class="text-end duree">{{ c.total | duree }}</td>
+          <td class="text-end duree text-body-secondary">{{ c.ecart | duree(true) if c.rang > 1 else "" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-body-secondary">Aucun équipage classé.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% elif onglet == "partenaires" %}
+<div class="row g-3">
+  {% for titre, liste, attribut in [("Sponsors", rallye.sponsors, "nomSponsor"), ("Fournisseurs", rallye.fournisseurs, "nomFournisseur")] %}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">{{ titre }}</div>
+      <ul class="list-group list-group-flush">
+        {% for p in liste %}<li class="list-group-item">{{ p[attribut] }}</li>
+        {% else %}<li class="list-group-item text-body-secondary">Aucun</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
