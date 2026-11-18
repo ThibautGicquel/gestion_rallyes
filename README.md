@@ -12,7 +12,7 @@ Base de données PostgreSQL de gestion de rallyes (automobiles, camions, motos),
 ```
 Projet/
 ├── docker-compose.yml       services : base (db), initialisation (loader), application (app)
-├── .env                     identifiants de la base et port
+├── .env.example             modèle du fichier .env (identifiants de la base, ports)
 ├── requirements.txt         dépendances Python du notebook
 ├── sql/
 │   ├── 00_init.sql          exécute 01 à 04 puis 07 dans l'ordre
@@ -51,6 +51,14 @@ Projet/
 ## Premier lancement
 
 Toutes les commandes se tapent dans un terminal (PowerShell sous Windows), **depuis le dossier du projet**.
+
+Créer d'abord le fichier `.env`, qui contient les identifiants de la base, à partir du modèle fourni (une seule fois) :
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Puis lancer le projet :
 
 ```powershell
 docker compose up -d
@@ -170,7 +178,7 @@ Si la base refuse une opération (contrainte, trigger, droit insuffisant), la tr
 
 ### Paramètres de l'application
 
-Variables à placer dans `.env`, toutes facultatives :
+Variables à décommenter dans `.env`, toutes facultatives :
 
 | Variable | Rôle | Valeur par défaut |
 |---|---|---|
@@ -241,6 +249,7 @@ Le notebook recrée entièrement la base à chaque exécution. Les données gén
 ## Dépannage
 
 - **`container name "/rallye-db" is already in use`** : un ancien conteneur créé avec `docker run` porte le même nom. Le supprimer : `docker rm -f rallye-db`, puis relancer `docker compose up -d`.
+- **`The "POSTGRES_USER" variable is not set`** ou **`Database is uninitialized and superuser password is not specified`** : le fichier `.env` manque. Le créer avec `Copy-Item .env.example .env`, puis relancer `docker compose up -d`.
 - **`port is already allocated`** : le port 5432 (base) ou 8000 (application) est déjà utilisé. Mettre `DB_PORT=5433` ou `APP_PORT=8001` dans `.env`, relancer, et utiliser le nouveau port.
 - **Le loader échoue** : afficher l'erreur avec `docker compose logs loader`. La base n'est modifiée que si l'alimentation va jusqu'au bout (une seule transaction).
 - **L'application ne répond pas ou affiche une erreur** : afficher ses messages avec `docker compose logs app`.
