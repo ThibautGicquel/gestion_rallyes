@@ -6,7 +6,7 @@ from flask import flash, jsonify, redirect, render_template, request, url_for
 from sqlalchemy import case, delete, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from wtforms import IntegerField, SelectField, StringField
-from wtforms.validators import DataRequired, NumberRange, ValidationError
+from wtforms.validators import DataRequired, InputRequired, NumberRange, ValidationError
 
 from . import db
 from .consultation import du_rallye, jointure_vehicule
@@ -52,7 +52,7 @@ class FormulaireEquipage(Formulaire):
     concurrent2 = StringField("Second concurrent", validators=[DataRequired()])
     numeroSerie = SelectField("Véhicule", validators=[DataRequired()], validate_choice=False)
     numeroOrga = IntegerField("Numéro attribué par l'organisation",
-                              validators=[DataRequired(), NumberRange(1, 99999)])
+                              validators=[InputRequired(), NumberRange(1, 99999)])
 
     def __init__(self, nom, annee, *args, **kwargs):
         super().__init__(*args, **kwargs)

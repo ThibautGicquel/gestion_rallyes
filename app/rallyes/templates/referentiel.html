@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titre %}{{ titre }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Administration</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ titre }}</li>
+  </ol>
+</nav>
+
+<h1 class="h3 mb-3">{{ titre }} <span class="badge text-bg-secondary fs-6 align-middle">{{ valeurs | length }}</span></h1>
+
+<form method="post" novalidate class="row g-2 align-items-start mb-3">
+  {{ form.hidden_tag() }}
+  <div class="col-sm-8 col-md-5">
+    <label class="visually-hidden" for="valeur">{{ form.valeur.label.text }}</label>
+    {{ form.valeur(class="form-control" + (" is-invalid" if form.valeur.errors else ""), placeholder="Ajouter…") }}
+    {% for e in form.valeur.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="col-auto"><button class="btn btn-success" type="submit"><i class="bi bi-plus-lg"></i> Ajouter</button></div>
+</form>
+
+<div class="card shadow-sm">
+  <ul class="list-group list-group-flush">
+    {% for valeur, usages in valeurs %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span>{{ valeur }}</span>
+      {% if usages %}
+      <span class="small text-body-secondary" title="Référencé ailleurs : suppression impossible">utilisé {{ usages | nombre }} fois</span>
+      {% else %}
+      <form method="post" action="{{ url_for('admin.supprimer_referentiel', cle=cle) }}"
+            onsubmit="return confirm({{ ('Supprimer « ' ~ valeur ~ ' » ?') | tojson | forceescape }});">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="valeur" value="{{ valeur }}">
+        <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Supprimer</button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

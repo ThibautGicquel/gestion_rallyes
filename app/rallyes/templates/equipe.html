@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import categorie as badge_categorie, lien_equipage, lien_marque, liens_concurrents, type_equipe as badge_type %}
+{% from "formulaires.html" import bouton_supprimer %}
 {% block titre %}{{ equipe }}{% endblock %}
 
 {% block contenu %}
@@ -13,6 +14,12 @@
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
   <h1 class="h3 mb-0">{{ equipe.nomEquipe }}</h1>
   {{ badge_type(equipe.typeEquipe) }}
+  {% if current_user.a_le_droit("administrateur") %}
+  <span class="ms-auto d-flex gap-2">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.modifier_equipe', nom=equipe.nomEquipe) }}"><i class="bi bi-pencil"></i> Modifier</a>
+    {% if not nb_equipages %}{{ bouton_supprimer(url_for('admin.supprimer_equipe', nom=equipe.nomEquipe), "Supprimer l'équipe " ~ equipe.nomEquipe ~ " ?") }}{% endif %}
+  </span>
+  {% endif %}
 </div>
 
 <div class="row g-3 mb-4">

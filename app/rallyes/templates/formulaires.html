@@ -27,12 +27,12 @@
 {% endmacro %}
 
 {# Boutons radio #}
-{% macro radios(field, classe_col="col-12") %}
+{% macro radios(field, classe_col="col-12", desactive=false) %}
 <div class="{{ classe_col }}">
   <div class="form-label">{{ field.label.text }}</div>
   {% for option in field %}
   <div class="form-check form-check-inline">
-    {{ option(class="form-check-input") }} {{ option.label(class="form-check-label") }}
+    {{ option(class="form-check-input", disabled=desactive) }} {{ option.label(class="form-check-label") }}
   </div>
   {% endfor %}
   {% for erreur in field.errors %}<div class="text-danger small">{{ erreur }}</div>{% endfor %}

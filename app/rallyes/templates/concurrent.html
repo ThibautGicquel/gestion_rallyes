@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import categorie as badge_categorie, lien_equipage, lien_equipe, lien_marque, lien_pays, liens_concurrents %}
+{% from "formulaires.html" import bouton_supprimer %}
 {% block titre %}{{ concurrent }}{% endblock %}
 
 {% block contenu %}
@@ -10,7 +11,13 @@
   </ol>
 </nav>
 
-<h1 class="h3 mb-3">{{ concurrent.prenom }} {{ concurrent.nom }}</h1>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0 me-auto">{{ concurrent.prenom }} {{ concurrent.nom }}</h1>
+  {% if current_user.a_le_droit("administrateur") %}
+  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.modifier_concurrent', num=concurrent.numConcurrent) }}"><i class="bi bi-pencil"></i> Modifier</a>
+  {% if not historique %}{{ bouton_supprimer(url_for('admin.supprimer_concurrent', num=concurrent.numConcurrent), "Supprimer le concurrent " ~ concurrent ~ " ?") }}{% endif %}
+  {% endif %}
+</div>
 
 <div class="row g-3 mb-4">
   <div class="col-md-6">

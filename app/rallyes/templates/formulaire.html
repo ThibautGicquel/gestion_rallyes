@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "formulaires.html" import champ, cases, radios %}
+{% block titre %}{{ titre }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    {% for libelle, url in chemin %}<li class="breadcrumb-item"><a href="{{ url }}">{{ libelle }}</a></li>{% endfor %}
+    <li class="breadcrumb-item active" aria-current="page">{{ titre }}</li>
+  </ol>
+</nav>
+
+<h1 class="h3 mb-3">{{ titre }}</h1>
+{% if aide %}<div class="alert alert-light border small">{{ aide }}</div>{% endif %}
+
+<form method="post" novalidate class="card shadow-sm">
+  <div class="card-body row g-3">
+    {{ form.hidden_tag() }}
+    {% for field in form if field.type not in ("CSRFTokenField", "HiddenField") %}
+      {% set fige = field.name in lecture_seule %}
+      {% if field.type == "SelectMultipleField" %}
+        {{ cases(field, "col-md-6") }}
+      {% elif field.type == "RadioField" %}
+        {{ radios(field, "col-12", fige) }}
+      {% elif field.type == "SelectField" %}
+        {{ champ(field, "col-md-6", "form-select", disabled=fige) }}
+      {% else %}
+        {{ champ(field, "col-md-6", readonly=fige) }}
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a class="btn btn-outline-secondary" href="{{ retour }}">Annuler</a>
+  </div>
+</form>
+{% endblock %}

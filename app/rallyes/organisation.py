@@ -6,7 +6,8 @@ from sqlalchemy import and_, delete, func, insert, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from wtforms import (DateTimeLocalField, DecimalField, IntegerField, RadioField,
                      SelectMultipleField, StringField)
-from wtforms.validators import DataRequired, Length, NumberRange, Optional, ValidationError
+from wtforms.validators import (DataRequired, InputRequired, Length, NumberRange, Optional,
+                                ValidationError)
 
 from . import db
 from .droits import role_requis
@@ -40,7 +41,7 @@ def enregistrer(message):
 
 class FormulaireRallye(Formulaire):
     nomRallye = StringField("Nom du rallye", validators=[DataRequired(), Length(max=50)])
-    annee = IntegerField("Année", validators=[DataRequired(), NumberRange(1900, 2100)])
+    annee = IntegerField("Année", validators=[InputRequired(), NumberRange(1900, 2100)])
     sponsors = SelectMultipleField("Sponsors")
     fournisseurs = SelectMultipleField("Fournisseurs")
 
@@ -126,7 +127,7 @@ class FormulaireEtape(Formulaire):
     villeDepart = StringField("Ville de départ", validators=[DataRequired(), Length(max=50)])
     villeArrivee = StringField("Ville d'arrivée", validators=[DataRequired(), Length(max=50)])
     distance = DecimalField("Distance (km)", places=2,
-                            validators=[DataRequired(), NumberRange(min=0.01, max=9999.99)])
+                            validators=[InputRequired(), NumberRange(min=0.01, max=9999.99)])
     pays = SelectMultipleField("Pays traversés")
     debut = DateTimeLocalField("Début de la tranche horaire (UTC)", format=FORMAT_HEURE,
                                validators=[Optional()])

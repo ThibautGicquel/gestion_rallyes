@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "formulaires.html" import bouton_supprimer %}
+{% block titre %}Comptes{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.index') }}">Administration</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Comptes</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Comptes de l'application</h1>
+  <a class="btn btn-success" href="{{ url_for('admin.nouveau_compte') }}"><i class="bi bi-person-plus"></i> Nouveau compte</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Identifiant</th><th>Profil</th><th>Rôle PostgreSQL</th><th></th></tr></thead>
+      <tbody>
+        {% for c in comptes %}
+        <tr>
+          <td>{{ c.login }}{% if c.login == current_user.login %} <span class="badge text-bg-light border">vous</span>{% endif %}</td>
+          <td><span class="badge text-bg-{{ 'danger' if c.profil == 'administrateur' else 'warning' }}">{{ c.profil }}</span></td>
+          <td><code>{{ "rallye_admin" if c.profil == "administrateur" else "rallye_saisie" }}</code></td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.modifier_compte', login=c.login) }}"><i class="bi bi-pencil"></i> Modifier</a>
+            {% if c.login != current_user.login %}
+            {{ bouton_supprimer(url_for('admin.supprimer_compte', login=c.login), "Supprimer le compte " ~ c.login ~ " ?") }}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="small text-body-secondary mt-2">
+  Les visiteurs n'ont pas de compte : ils consultent avec le rôle <code>rallye_lecture</code>.
+  Les mots de passe sont stockés hachés (scrypt).
+</p>
+{% endblock %}

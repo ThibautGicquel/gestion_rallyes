@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import categorie as badge_categorie, lien_equipage, lien_equipe, lien_marque, liens_concurrents %}
+{% from "formulaires.html" import bouton_supprimer %}
 {% block titre %}Véhicule {{ vehicule.numeroSerie }}{% endblock %}
 
 {% block contenu %}
@@ -14,6 +15,12 @@
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
   <h1 class="h3 mb-0">{{ vehicule.nomMarque }} · {{ vehicule.numeroSerie }}</h1>
   {{ badge_categorie(vehicule.type) }}
+  {% if current_user.a_le_droit("administrateur") %}
+  <span class="ms-auto d-flex gap-2">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.modifier_vehicule', serie=vehicule.numeroSerie) }}"><i class="bi bi-pencil"></i> Modifier</a>
+    {% if not pilotages %}{{ bouton_supprimer(url_for('admin.supprimer_vehicule', serie=vehicule.numeroSerie), "Supprimer le véhicule " ~ vehicule.numeroSerie ~ " ?") }}{% endif %}
+  </span>
+  {% endif %}
 </div>
 <p class="text-body-secondary">Cylindrée {{ vehicule.cylindree | nombre }} cm³ · {{ pilotages | length }} participation(s)</p>
 

@@ -38,6 +38,7 @@ def create_app(config=Config):
                                message="Cette page n'existe pas."), 404
 
     from .accueil import bp as accueil
+    from .admin import bp as admin
     from .auth import bp as auth
     from .annuaire import bp as annuaire
     from .consultation import bp as consultation
@@ -49,6 +50,7 @@ def create_app(config=Config):
     app.register_blueprint(annuaire)
     app.register_blueprint(requetes)
     app.register_blueprint(organisation)
+    app.register_blueprint(admin)
 
     if app.config["COMPTES_DEMO"]:
         creer_comptes_demo(app)

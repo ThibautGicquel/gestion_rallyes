@@ -33,6 +33,11 @@
             <a class="nav-link {{ 'active' if request.endpoint in pages }}" href="{{ url_for(endpoint) }}">{{ libelle }}</a>
           </li>
           {% endfor %}
+          {% if current_user.a_le_droit("administrateur") %}
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.blueprint == 'admin' }}" href="{{ url_for('admin.index') }}"><i class="bi bi-gear"></i> Administration</a>
+          </li>
+          {% endif %}
         </ul>
         {% if current_user.is_authenticated %}
         <form class="d-flex align-items-center gap-2" method="post" action="{{ url_for('auth.deconnexion') }}">
