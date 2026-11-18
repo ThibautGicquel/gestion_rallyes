@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import categorie as badge_categorie, type_etape, filtre_categories, lien_equipage, lien_equipe, lien_marque, lien_pays %}
+{% from "formulaires.html" import bouton_supprimer %}
 {% block titre %}{{ r }} · étape {{ etape.numEtape }}{% endblock %}
 
 {% block contenu %}
@@ -13,6 +14,14 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h3 mb-0">Étape {{ etape.numEtape }} : {{ etape.villeDepart }} → {{ etape.villeArrivee }}</h1>
+  <div class="d-flex flex-wrap gap-2">
+  {% if current_user.a_le_droit("organisateur") %}
+  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('organisation.modifier_etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape) }}"><i class="bi bi-pencil"></i> Modifier</a>
+  {% if etape.numEtape == nb_etapes %}
+  {{ bouton_supprimer(url_for('organisation.supprimer_etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape),
+                      "Supprimer l'étape " ~ etape.numEtape ~ " et tous ses résultats ?") }}
+  {% endif %}
+  {% endif %}
   <div class="btn-group btn-group-sm">
     {% if etape.numEtape > 1 %}
     <a class="btn btn-outline-secondary" href="{{ url_for('consultation.etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape - 1, categorie=categorie) }}"><i class="bi bi-chevron-left"></i> Étape {{ etape.numEtape - 1 }}</a>
@@ -20,6 +29,7 @@
     {% if etape.numEtape < nb_etapes %}
     <a class="btn btn-outline-secondary" href="{{ url_for('consultation.etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape + 1, categorie=categorie) }}">Étape {{ etape.numEtape + 1 }} <i class="bi bi-chevron-right"></i></a>
     {% endif %}
+  </div>
   </div>
 </div>
 

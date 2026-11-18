@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "formulaires.html" import champ, cases %}
+{% block titre %}{{ "Modifier " ~ rallye if rallye else "Nouveau rallye" }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes') }}">Rallyes</a></li>
+    {% if rallye %}
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee) }}">{{ rallye }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+    {% else %}
+    <li class="breadcrumb-item active" aria-current="page">Nouveau rallye</li>
+    {% endif %}
+  </ol>
+</nav>
+
+<h1 class="h3 mb-3">{{ "Modifier le rallye " ~ rallye if rallye else "Nouveau rallye" }}</h1>
+
+<form method="post" novalidate class="card shadow-sm">
+  <div class="card-body row g-3">
+    {{ form.hidden_tag() }}
+    {% if rallye %}
+    {{ champ(form.nomRallye, "col-md-8", readonly=true) }}
+    {{ champ(form.annee, "col-md-4", readonly=true) }}
+    <div class="col-12 small text-body-secondary mt-1">Le nom et l'année identifient l'édition (clé primaire) : ils ne sont pas modifiables.</div>
+    {% else %}
+    {{ champ(form.nomRallye, "col-md-8", list="noms-rallyes", autofocus=true) }}
+    {{ champ(form.annee, "col-md-4", min=1900, max=2100) }}
+    <datalist id="noms-rallyes">{% for n in noms %}<option value="{{ n }}">{% endfor %}</datalist>
+    {% endif %}
+    {{ cases(form.sponsors, "col-md-6") }}
+    {{ cases(form.fournisseurs, "col-md-6") }}
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee) if rallye else url_for('consultation.rallyes') }}">Annuler</a>
+  </div>
+</form>
+{% endblock %}

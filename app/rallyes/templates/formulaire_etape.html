@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "formulaires.html" import champ, cases, radios %}
+{% block titre %}{{ rallye }} · {{ "modifier l'étape" if etape else "nouvelle étape" }} {{ numero }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes') }}">Rallyes</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee) }}">{{ rallye }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ "Modifier l'étape" if etape else "Nouvelle étape" }} {{ numero }}</li>
+  </ol>
+</nav>
+
+<h1 class="h3 mb-3">{{ "Modifier l'étape" if etape else "Nouvelle étape" }} {{ numero }} · {{ rallye }}</h1>
+
+<form method="post" novalidate class="card shadow-sm">
+  <div class="card-body row g-3">
+    {{ form.hidden_tag() }}
+    {{ radios(form.typeEtape) }}
+    {% if etape %}
+    <div class="col-12 small text-body-secondary mt-0">
+      Changer le type remplace la ligne de la table <code>{{ etape.typeEtape | lower }}</code> par une ligne de l'autre sous-type.
+    </div>
+    {% endif %}
+    {{ champ(form.villeDepart, "col-md-5") }}
+    {{ champ(form.villeArrivee, "col-md-5") }}
+    {{ champ(form.distance, "col-md-2", type="number", step="0.01", min="0.01") }}
+    <div class="col-12 small text-body-secondary mt-1">La ville de départ et la ville d'arrivée peuvent être identiques (boucle).</div>
+    <div class="row g-3 m-0 p-0" id="tranche">
+      {{ champ(form.debut, "col-md-6") }}
+      {{ champ(form.fin, "col-md-6") }}
+      <div class="col-12 small text-body-secondary mt-1">Un équipage qui termine après la fin de la tranche est disqualifié.</div>
+    </div>
+    {{ cases(form.pays) }}
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('consultation.etape', nom=rallye.nomRallye, annee=rallye.annee, num=numero) if etape else url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee) }}">Annuler</a>
+  </div>
+</form>
+
+<script>
+  // La tranche horaire ne concerne que les spéciales
+  const tranche = document.getElementById("tranche");
+  const radios = document.querySelectorAll('input[name="typeEtape"]');
+  function afficherTranche() {
+    const speciale = document.querySelector('input[name="typeEtape"]:checked')?.value === "SPECIALE";
+    tranche.classList.toggle("d-none", !speciale);
+  }
+  radios.forEach(r => r.addEventListener("change", afficherTranche));
+  afficherTranche();
+</script>
+{% endblock %}

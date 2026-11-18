@@ -141,8 +141,9 @@ class Etape(db.Model):
     rallye = relationship("Rallye", back_populates="etapes")
     pays = relationship("Pays", secondary=traverse, back_populates="etapes",
                         order_by="Pays.nomPays")
+    # passive_deletes : les résultats sont supprimés par la base (ON DELETE CASCADE)
     resultats = relationship("Resultat", back_populates="etape", cascade="all, delete-orphan",
-                             overlaps="resultats")
+                             passive_deletes=True, overlaps="resultats")
 
     @property
     def est_speciale(self):

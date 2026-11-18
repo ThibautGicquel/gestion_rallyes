@@ -22,3 +22,9 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+.cases-a-cocher {
+  max-height: 16rem;
+  overflow-y: auto;
+  column-width: 12rem;
+}

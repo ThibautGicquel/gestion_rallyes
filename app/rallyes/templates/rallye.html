@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import entete, pagination, categorie as badge_categorie, type_etape, filtre_categories, lien_equipage, lien_equipe, lien_marque, lien_pays, liens_concurrents %}
+{% from "formulaires.html" import bouton_supprimer %}
 {% block titre %}{{ rallye }}{% endblock %}
 
 {% block contenu %}
@@ -18,6 +19,17 @@
   </div>
 </div>
 
+{% if current_user.a_le_droit("organisateur") %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('organisation.modifier_rallye', nom=rallye.nomRallye, annee=rallye.annee) }}"><i class="bi bi-pencil"></i> Sponsors et fournisseurs</a>
+  <a class="btn btn-sm btn-outline-success" href="{{ url_for('organisation.nouvelle_etape', nom=rallye.nomRallye, annee=rallye.annee) }}"><i class="bi bi-plus-lg"></i> Ajouter une étape</a>
+  {% if not stats.nbEquipages %}
+  {{ bouton_supprimer(url_for('organisation.supprimer_rallye', nom=rallye.nomRallye, annee=rallye.annee),
+                      "Supprimer le rallye " ~ rallye ~ " et ses " ~ stats.nbEtapes ~ " étapes ?", "Supprimer le rallye") }}
+  {% endif %}
+</div>
+{% endif %}
+
 <ul class="nav nav-tabs mb-3">
   {% for cle, libelle in onglets.items() %}
   <li class="nav-item">
@@ -31,7 +43,7 @@
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead>
-        <tr><th>N°</th><th>Type</th><th>Départ</th><th>Arrivée</th><th class="text-end">Distance</th><th>Pays traversés</th></tr>
+        <tr><th>N°</th><th>Type</th><th>Départ</th><th>Arrivée</th><th class="text-end">Distance</th><th>Pays traversés</th>{% if current_user.a_le_droit("organisateur") %}<th></th>{% endif %}</tr>
       </thead>
       <tbody>
         {% for e in etapes %}
@@ -42,7 +54,12 @@
           <td>{{ e.villeArrivee }}{% if e.villeDepart == e.villeArrivee %} <span class="badge text-bg-light border" title="Même ville au départ et à l'arrivée">boucle</span>{% endif %}</td>
           <td class="text-end">{{ e.distance | km }}</td>
           <td>{% for p in (e.pays or "").split(", ") if p %}{{ lien_pays(p) }}{{ ", " if not loop.last }}{% endfor %}</td>
+          {% if current_user.a_le_droit("organisateur") %}
+          <td class="text-end"><a class="btn btn-sm btn-link" title="Modifier l'étape" href="{{ url_for('organisation.modifier_etape', nom=e.nomRallye, annee=e.annee, num=e.numEtape) }}"><i class="bi bi-pencil"></i></a></td>
+          {% endif %}
         </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-body-secondary">Aucune étape pour l'instant.</td></tr>
         {% endfor %}
       </tbody>
     </table>

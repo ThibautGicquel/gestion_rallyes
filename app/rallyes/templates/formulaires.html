@@ -1,0 +1,48 @@
+{# Champ texte, nombre ou date avec son libellé et ses erreurs #}
+{% macro champ(field, classe_col="col-md-6") %}
+<div class="{{ classe_col }}">
+  {{ field.label(class="form-label") }}
+  {{ field(class="form-control" + (" is-invalid" if field.errors else ""), **kwargs) }}
+  {% for erreur in field.errors %}<div class="invalid-feedback">{{ erreur }}</div>{% endfor %}
+</div>
+{% endmacro %}
+
+{# Liste à choix multiple affichée en cases à cocher #}
+{% macro cases(field, classe_col="col-12") %}
+<div class="{{ classe_col }}">
+  <div class="form-label">{{ field.label.text }}</div>
+  <div class="border rounded p-2 cases-a-cocher {{ 'border-danger' if field.errors }}">
+    {% for choix in field.choices %}
+    {% set valeur = choix[0] if choix is not string else choix %}
+    {% set libelle = choix[1] if choix is not string else choix %}
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="{{ field.name }}" value="{{ valeur }}"
+             id="{{ field.id }}-{{ loop.index }}" {{ 'checked' if field.data and valeur in field.data }}>
+      <label class="form-check-label" for="{{ field.id }}-{{ loop.index }}">{{ libelle }}</label>
+    </div>
+    {% endfor %}
+  </div>
+  {% for erreur in field.errors %}<div class="text-danger small mt-1">{{ erreur }}</div>{% endfor %}
+</div>
+{% endmacro %}
+
+{# Boutons radio #}
+{% macro radios(field, classe_col="col-12") %}
+<div class="{{ classe_col }}">
+  <div class="form-label">{{ field.label.text }}</div>
+  {% for option in field %}
+  <div class="form-check form-check-inline">
+    {{ option(class="form-check-input") }} {{ option.label(class="form-check-label") }}
+  </div>
+  {% endfor %}
+  {% for erreur in field.errors %}<div class="text-danger small">{{ erreur }}</div>{% endfor %}
+</div>
+{% endmacro %}
+
+{# Bouton de suppression (formulaire POST protégé par CSRF, avec confirmation) #}
+{% macro bouton_supprimer(action, confirmation, libelle="Supprimer") %}
+<form method="post" action="{{ action }}" class="d-inline" onsubmit="return confirm({{ confirmation | tojson | forceescape }});">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> {{ libelle }}</button>
+</form>
+{% endmacro %}

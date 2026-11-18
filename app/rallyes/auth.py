@@ -2,7 +2,6 @@ from urllib.parse import urlsplit
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import LoginManager, login_user, logout_user
-from flask_wtf import FlaskForm
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -13,6 +12,7 @@ from wtforms.validators import DataRequired
 from . import db
 from .droits import Compte, Visiteur
 from .modeles import Utilisateur
+from .outils import Formulaire
 
 bp = Blueprint("auth", __name__)
 
@@ -57,7 +57,7 @@ def creer_comptes_demo(app):
         app.logger.warning("Comptes de démonstration non créés : %s", exc)
 
 
-class FormulaireConnexion(FlaskForm):
+class FormulaireConnexion(Formulaire):
     login = StringField("Identifiant", validators=[DataRequired()])
     motDePasse = PasswordField("Mot de passe", validators=[DataRequired()])
 

@@ -1,8 +1,16 @@
 """Tri, pagination et formats d'affichage communs aux pages."""
 from flask import request, url_for
 from flask_sqlalchemy.pagination import SelectPagination
+from flask_wtf import FlaskForm
 
 CATEGORIES = ["Auto", "Moto", "Camion"]
+
+
+class Formulaire(FlaskForm):
+    """Formulaire avec protection CSRF et messages de validation en français."""
+
+    class Meta:
+        locales = ["fr_FR", "fr"]
 
 
 class PaginationLignes(SelectPagination):
@@ -30,6 +38,26 @@ class Tri:
         self.ordre = ordre_demande if ordre_demande in ("asc", "desc") else ordre
         colonne = colonnes[self.cle]
         self.expression = (colonne.desc() if self.ordre == "desc" else colonne.asc()).nulls_last()
+
+
+MESSAGES_SQLSTATE = {
+    "23505": "Cet enregistrement existe déjà.",
+    "23503": "Opération impossible : des données liées existent (ou manquent).",
+    "23514": "Une contrainte de la base n'est pas respectée.",
+    "23502": "Une valeur obligatoire est manquante.",
+    "42501": "Votre profil n'a pas le droit d'effectuer cette opération.",
+}
+
+
+def message_erreur(exc):
+    """Message lisible pour une erreur renvoyée par PostgreSQL. Les erreurs levées
+    par les triggers (RAISE EXCEPTION, code P0001) sont affichées telles quelles."""
+    origine = getattr(exc, "orig", None)
+    code = getattr(origine, "sqlstate", None)
+    detail = getattr(getattr(origine, "diag", None), "message_primary", None) or str(exc)
+    if code == "P0001":
+        return detail
+    return f"{MESSAGES_SQLSTATE.get(code, 'Erreur de la base de données.')} ({detail})"
 
 
 def categorie_demandee():

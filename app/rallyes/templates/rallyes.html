@@ -3,7 +3,12 @@
 {% block titre %}Rallyes{% endblock %}
 
 {% block contenu %}
-<h1 class="h3 mb-3">Rallyes</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Rallyes</h1>
+  {% if current_user.a_le_droit("organisateur") %}
+  <a class="btn btn-success" href="{{ url_for('organisation.nouveau_rallye') }}"><i class="bi bi-plus-lg"></i> Nouveau rallye</a>
+  {% endif %}
+</div>
 
 <form class="row g-2 align-items-end mb-3" method="get">
   <div class="col-sm-5 col-md-4">
