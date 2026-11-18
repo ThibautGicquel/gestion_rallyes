@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "formulaires.html" import champ %}
+{% block titre %}{{ rallye }} · inscrire un équipage{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes') }}">Rallyes</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee, onglet='equipages') }}">{{ rallye }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Inscrire un équipage</li>
+  </ol>
+</nav>
+
+<h1 class="h3 mb-1">Inscrire un équipage · {{ rallye }}</h1>
+<p class="text-body-secondary">
+  Un équipage compte exactement deux concurrents et un véhicule (C12) : les trois sont enregistrés
+  ensemble, dans une seule transaction.
+</p>
+
+<form method="post" novalidate class="card shadow-sm" id="form-equipage">
+  <div class="card-body row g-3">
+    {{ form.hidden_tag() }}
+    {{ champ(form.nomEquipe, "col-md-8", "form-select") }}
+    {{ champ(form.numeroOrga, "col-md-4", type="number", min=1) }}
+    {{ champ(form.concurrent1, "col-md-6", list="liste-concurrents", autocomplete="off",
+             placeholder="Nom, prénom ou numéro…") }}
+    {{ champ(form.concurrent2, "col-md-6", list="liste-concurrents", autocomplete="off",
+             placeholder="Nom, prénom ou numéro…") }}
+    <datalist id="liste-concurrents"></datalist>
+    <div class="col-12 small text-body-secondary mt-1">
+      Seuls les concurrents qui ne courent pas déjà dans ce rallye sont proposés (C8).
+    </div>
+    {{ champ(form.numeroSerie, "col-12", "form-select") }}
+    <div class="col-12 small text-body-secondary mt-1">
+      Seuls les véhicules des marques de l'équipe (C14), pas encore engagés dans ce rallye (C9), sont proposés.
+    </div>
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Inscrire</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee, onglet='equipages') }}">Annuler</a>
+  </div>
+</form>
+
+<script>
+  const urlConcurrents = {{ url_for('organisation.concurrents_disponibles', nom=rallye.nomRallye, annee=rallye.annee) | tojson }};
+  const urlVehicules = {{ url_for('organisation.vehicules_disponibles_json', nom=rallye.nomRallye, annee=rallye.annee) | tojson }};
+  const datalist = document.getElementById("liste-concurrents");
+  let minuterie;
+
+  // Suggestions de concurrents pendant la saisie
+  for (const id of ["concurrent1", "concurrent2"]) {
+    document.getElementById(id).addEventListener("input", (evt) => {
+      clearTimeout(minuterie);
+      const q = evt.target.value.trim();
+      if (q.length < 2 || /^\d+ — /.test(q)) return;
+      minuterie = setTimeout(async () => {
+        const reponse = await fetch(`${urlConcurrents}?q=${encodeURIComponent(q)}`);
+        datalist.replaceChildren(...(await reponse.json()).map((texte) => new Option(texte)));
+      }, 250);
+    });
+  }
+
+  // Véhicules disponibles pour l'équipe choisie
+  const equipe = document.getElementById("nomEquipe");
+  const vehicule = document.getElementById("numeroSerie");
+  equipe.addEventListener("change", async () => {
+    vehicule.replaceChildren(new Option("Chargement…", ""));
+    if (!equipe.value) {
+      vehicule.replaceChildren(new Option("Choisir d'abord une équipe…", ""));
+      return;
+    }
+    const reponse = await fetch(`${urlVehicules}?equipe=${encodeURIComponent(equipe.value)}`);
+    const liste = await reponse.json();
+    vehicule.replaceChildren(
+      new Option(liste.length ? "Choisir un véhicule…" : "Aucun véhicule disponible pour cette équipe", ""),
+      ...liste.map((v) => new Option(v.libelle, v.valeur)));
+  });
+</script>
+{% endblock %}

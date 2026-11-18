@@ -17,6 +17,7 @@
   <div class="d-flex flex-wrap gap-2">
   {% if current_user.a_le_droit("organisateur") %}
   <a class="btn btn-sm btn-outline-primary" href="{{ url_for('organisation.modifier_etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape) }}"><i class="bi bi-pencil"></i> Modifier</a>
+  <a class="btn btn-sm btn-success" href="{{ url_for('organisation.resultats_etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape, categorie=categorie) }}"><i class="bi bi-stopwatch"></i> Saisir les résultats</a>
   {% if etape.numEtape == nb_etapes %}
   {{ bouton_supprimer(url_for('organisation.supprimer_etape', nom=r.nomRallye, annee=r.annee, num=etape.numEtape),
                       "Supprimer l'étape " ~ etape.numEtape ~ " et tous ses résultats ?") }}

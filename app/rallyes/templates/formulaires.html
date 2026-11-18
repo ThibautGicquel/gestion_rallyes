@@ -1,8 +1,8 @@
 {# Champ texte, nombre ou date avec son libellé et ses erreurs #}
-{% macro champ(field, classe_col="col-md-6") %}
+{% macro champ(field, classe_col="col-md-6", classe="form-control") %}
 <div class="{{ classe_col }}">
   {{ field.label(class="form-label") }}
-  {{ field(class="form-control" + (" is-invalid" if field.errors else ""), **kwargs) }}
+  {{ field(class=classe + (" is-invalid" if field.errors else ""), **kwargs) }}
   {% for erreur in field.errors %}<div class="invalid-feedback">{{ erreur }}</div>{% endfor %}
 </div>
 {% endmacro %}

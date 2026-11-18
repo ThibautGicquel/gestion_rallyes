@@ -1,4 +1,4 @@
-"""Saisie réservée aux organisateurs : éditions de rallyes et étapes."""
+"""Saisie réservée aux organisateurs : éditions de rallyes et étapes (suite dans saisie.py)."""
 from datetime import datetime, timezone
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -238,3 +238,7 @@ def supprimer_etape(nom, annee, num):
     db.session.delete(etape)
     enregistrer(f"Étape {num} supprimée avec ses résultats.")
     return redirect(url_for("consultation.rallye", nom=nom, annee=annee))
+
+
+# Inscription des équipages et saisie des résultats (mêmes droits, même blueprint)
+from . import saisie  # noqa: E402,F401

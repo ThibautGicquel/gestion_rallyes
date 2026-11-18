@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import categorie as badge_categorie, type_etape, lien_concurrent, lien_equipe, lien_marque, lien_pays, lien_vehicule %}
+{% from "formulaires.html" import bouton_supprimer %}
 {% block titre %}{{ r }} · n° {{ equipage.pilote.numeroOrga }}{% endblock %}
 
 {% block contenu %}
@@ -15,6 +16,13 @@
   <h1 class="h3 mb-0">Équipage n° {{ equipage.pilote.numeroOrga }}</h1>
   {{ badge_categorie(v.type) }}
   <span class="badge text-bg-{{ statut[0] }}">{{ statut[1] }}</span>
+  {% if current_user.a_le_droit("organisateur") %}
+  <span class="ms-auto">
+    {{ bouton_supprimer(url_for('organisation.supprimer_equipage', nom=r.nomRallye, annee=r.annee, num=equipage.numEquipage),
+                        "Désinscrire l'équipage n° " ~ equipage.pilote.numeroOrga ~ " et supprimer ses " ~ (resultats | length) ~ " résultat(s) ?",
+                        "Désinscrire") }}
+  </span>
+  {% endif %}
 </div>
 
 <div class="row g-3 mb-4">

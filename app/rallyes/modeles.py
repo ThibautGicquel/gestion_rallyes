@@ -289,7 +289,8 @@ class Equipage(db.Model):
     pilote = relationship("Pilote", back_populates="equipage", uselist=False,
                           cascade="all, delete-orphan")
     resultats = relationship("Resultat", back_populates="equipage",
-                             cascade="all, delete-orphan", overlaps="resultats")
+                             cascade="all, delete-orphan", passive_deletes=True,
+                             overlaps="resultats")
 
     def __str__(self):
         return f"Équipage {self.numEquipage}"

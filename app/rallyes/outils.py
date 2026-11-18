@@ -1,4 +1,6 @@
 """Tri, pagination et formats d'affichage communs aux pages."""
+from decimal import Decimal, InvalidOperation
+
 from flask import request, url_for
 from flask_sqlalchemy.pagination import SelectPagination
 from flask_wtf import FlaskForm
@@ -90,6 +92,27 @@ def duree(heures, signe=False):
     h, reste = divmod(abs(secondes), 3600)
     texte = f"{h}:{reste // 60:02d}:{reste % 60:02d}"
     return ("+" if secondes >= 0 else "-") + texte if signe else texte
+
+
+def lire_duree(texte):
+    """ "h:mm:ss", "h:mm" ou heures décimales ("3.5") -> heures (Decimal, 4 décimales)."""
+    texte = texte.strip().replace(",", ".")
+    try:
+        if ":" in texte:
+            parties = texte.split(":")
+            if len(parties) not in (2, 3) or not all(p.isdigit() for p in parties):
+                raise ValueError
+            h, m, s = (list(map(int, parties)) + [0])[:3]
+            if m >= 60 or s >= 60:
+                raise ValueError
+            heures = Decimal(h) + Decimal(m) / 60 + Decimal(s) / 3600
+        else:
+            heures = Decimal(texte)
+    except (ValueError, InvalidOperation):
+        raise ValueError(f"Durée invalide : « {texte} » (format h:mm:ss)") from None
+    if not 0 < heures < 10000:
+        raise ValueError("La durée doit être positive (C3).")
+    return heures.quantize(Decimal("0.0001"))
 
 
 def date_heure(valeur):

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "macros.html" import categorie as badge_categorie, type_etape, filtre_categories %}
+{% block titre %}{{ rallye }} · résultats de l'étape {{ etape.numEtape }}{% endblock %}
+
+{% block contenu %}
+<nav aria-label="Fil d'Ariane">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallyes') }}">Rallyes</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.rallye', nom=rallye.nomRallye, annee=rallye.annee) }}">{{ rallye }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('consultation.etape', nom=rallye.nomRallye, annee=rallye.annee, num=etape.numEtape) }}">Étape {{ etape.numEtape }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Saisie des résultats</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+  <h1 class="h3 mb-0">Résultats de l'étape {{ etape.numEtape }} : {{ etape.villeDepart }} → {{ etape.villeArrivee }}</h1>
+  {{ type_etape(etape.typeEtape) }}
+</div>
+<p class="text-body-secondary">
+  Durée au format <code>h:mm:ss</code>. Laisser la durée vide et la case décochée supprime le résultat (abandon).
+  {% if limite %}
+  <br>Spéciale : tranche horaire de <strong>{{ limite | duree }}</strong>. Une durée supérieure disqualifie automatiquement l'équipage.
+  {% endif %}
+</p>
+
+{{ filtre_categories(categorie) }}
+<span class="ms-2 small text-body-secondary">{{ nb_saisis }} résultat(s) déjà saisi(s) sur {{ lignes | length }} équipage(s).</span>
+
+<form method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0">
+        <thead>
+          <tr><th>N°</th><th>Catégorie</th><th>Équipe</th><th>Marque</th><th style="width: 11rem">Durée</th><th>Disqualifié</th><th>Situation</th></tr>
+        </thead>
+        <tbody>
+          {% for e, texte, disq, situation, erreur in lignes %}
+          <tr class="{{ 'table-secondary' if situation and not texte and not disq }}">
+            <td>{{ e.numeroOrga }}</td>
+            <td>{{ badge_categorie(e.categorie) }}</td>
+            <td class="small">{{ e.nomEquipe }}</td>
+            <td class="small">{{ e.nomMarque }}</td>
+            <td>
+              <input class="form-control form-control-sm duree {{ 'is-invalid' if erreur }}" name="duree-{{ e.numEquipage }}"
+                     value="{{ texte }}" placeholder="h:mm:ss" inputmode="numeric" aria-label="Durée de l'équipage {{ e.numeroOrga }}">
+              {% if erreur %}<div class="invalid-feedback">{{ erreur }}</div>{% endif %}
+            </td>
+            <td>
+              <input class="form-check-input" type="checkbox" name="disq-{{ e.numEquipage }}" value="1" {{ 'checked' if disq }}
+                     aria-label="Équipage {{ e.numeroOrga }} disqualifié">
+            </td>
+            <td class="small text-body-secondary">{{ situation or "" }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center text-body-secondary">Aucun équipage inscrit{{ " dans cette catégorie" if categorie }}.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="d-flex gap-2 mt-3 sticky-bottom bg-body-tertiary py-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer les résultats</button>
+    <a class="btn btn-outline-secondary" href="{{ url_for('consultation.etape', nom=rallye.nomRallye, annee=rallye.annee, num=etape.numEtape, categorie=categorie) }}">Annuler</a>
+  </div>
+</form>
+{% endblock %}

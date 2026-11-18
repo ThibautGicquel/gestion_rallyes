@@ -67,7 +67,12 @@
 </div>
 
 {% elif onglet == "equipages" %}
-{{ filtre_categories(categorie) }}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+  {{ filtre_categories(categorie) }}
+  {% if current_user.a_le_droit("organisateur") %}
+  <a class="btn btn-sm btn-success mb-3" href="{{ url_for('organisation.nouvel_equipage', nom=rallye.nomRallye, annee=rallye.annee) }}"><i class="bi bi-person-plus"></i> Inscrire un équipage</a>
+  {% endif %}
+</div>
 <div class="card shadow-sm">
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
